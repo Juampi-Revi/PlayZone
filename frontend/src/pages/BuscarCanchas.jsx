@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import CardCancha from '../components/CardCancha';
+import { useAuth } from '../context/AuthContext';
 
 const BuscarCanchas = () => {
   const [canchas, setCanchas] = useState([]);
@@ -14,6 +15,8 @@ const BuscarCanchas = () => {
   const [filtroPrecio, setFiltroPrecio] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [ordenarPor, setOrdenarPor] = useState('nombre');
+
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchCanchas();
@@ -294,7 +297,7 @@ const BuscarCanchas = () => {
             {/* Canchas Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {canchasFiltradas.map((cancha) => (
-                <CardCancha key={cancha.id} cancha={cancha} />
+                <CardCancha key={cancha.id} cancha={cancha} user={user} />
               ))}
             </div>
           </>

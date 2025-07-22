@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-const CardCancha = ({ cancha }) => {
+const CardCancha = ({ cancha, user }) => {
   const { id, nombre, descripcion, deporte, ubicacion, precioPorHora, horario, imagenes, disponible } = cancha;
   
   // Imagen por defecto si no hay imágenes
@@ -122,9 +122,15 @@ const CardCancha = ({ cancha }) => {
         {/* Quick actions on hover */}
         <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <div className="flex space-x-2">
-            <button className="flex-1 bg-green-500 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors duration-200">
-              Reservar Ahora
-            </button>
+            {user ? (
+              <button className="flex-1 bg-green-500 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors duration-200">
+                Reservar Ahora
+              </button>
+            ) : (
+              <a href="/login" className="flex-1 bg-blue-100 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors duration-200 text-center">
+                Inicia sesión para reservar
+              </a>
+            )}
             <button className="flex-1 bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors duration-200">
               Favorito
             </button>

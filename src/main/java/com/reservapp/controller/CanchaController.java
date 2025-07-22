@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -60,30 +61,30 @@ public class CanchaController {
     }
 
     // Endpoints de administración (deben ir antes que /{id})
+    @PreAuthorize("hasAuthority('CLUB')")
     @GetMapping("/admin")
     public ResponseEntity<List<Cancha>> getAllCanchasAdmin() {
-        // Aquí podrías agregar validación de roles/permisos
         return ResponseEntity.ok(canchaService.getAllCanchas());
     }
 
+    @PreAuthorize("hasAuthority('CLUB')")
     @PostMapping("/admin")
     public ResponseEntity<Cancha> createCanchaAdmin(@Valid @RequestBody Cancha cancha) {
-        // Aquí podrías agregar validación de roles/permisos
         Cancha nuevaCancha = canchaService.createCancha(cancha);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaCancha);
     }
 
+    @PreAuthorize("hasAuthority('CLUB')")
     @PutMapping("/admin/{id}")
     public ResponseEntity<Cancha> updateCanchaAdmin(@PathVariable Long id, @Valid @RequestBody Cancha cancha) {
-        // Aquí podrías agregar validación de roles/permisos
         return canchaService.updateCancha(id, cancha)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAuthority('CLUB')")
     @DeleteMapping("/admin/{id}")
     public ResponseEntity<Void> deleteCanchaAdmin(@PathVariable Long id) {
-        // Aquí podrías agregar validación de roles/permisos
         if (canchaService.deleteCancha(id)) {
             return ResponseEntity.noContent().build();
         }

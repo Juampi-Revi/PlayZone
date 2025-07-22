@@ -1,11 +1,16 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -15,10 +20,22 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Aquí se implementaría la lógica de autenticación
-    alert('Sistema de autenticación en desarrollo. Próximamente disponible.');
+    setError('');
+    setLoading(true);
+    try {
+      const res = await login(formData.email, formData.password);
+      if (res.success) {
+        navigate('/');
+      } else {
+        setError(res.message || 'Credenciales incorrectas');
+      }
+    } catch (err) {
+      setError('Error de red o del servidor');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,6 +91,8 @@ const Login = () => {
               />
             </div>
 
+            {error && <div className="text-red-600 text-sm text-center font-semibold">{error}</div>}
+
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <input
@@ -81,6 +100,7 @@ const Login = () => {
                   name="remember-me"
                   type="checkbox"
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  disabled
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                   Recordarme
@@ -98,40 +118,17 @@ const Login = () => {
               <button
                 type="submit"
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                disabled={loading}
               >
-                Iniciar Sesión
+                {loading ? 'Ingresando...' : 'Ingresar'}
               </button>
             </div>
-
-            <div className="text-center">
-              <p className="text-sm text-gray-600">
-                ¿No tienes una cuenta?{' '}
-                <Link to="/registro" className="font-medium text-blue-600 hover:text-blue-500">
-                  Regístrate aquí
-                </Link>
-              </p>
-            </div>
           </form>
-        </div>
-
-        {/* Placeholder Info */}
-        <div className="bg-blue-50 rounded-lg p-4 text-center">
-          <p className="text-sm text-blue-800">
-            🔐 Sistema de autenticación en desarrollo. 
-            Próximamente podrás acceder con tu cuenta.
-          </p>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="text-center space-y-4">
-          <Link 
-            to="/canchas"
-            className="inline-block bg-green-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-          >
-            Explorar Canchas
-          </Link>
-          <div className="text-xs text-gray-500">
-            Puedes explorar las canchas sin necesidad de cuenta
+          <div className="mt-6 text-center text-sm">
+            ¿No tienes cuenta?{' '}
+            <Link to="/registrar" className="text-blue-600 hover:underline font-semibold">
+              Regístrate
+            </Link>
           </div>
         </div>
       </div>

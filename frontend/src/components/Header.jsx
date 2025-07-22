@@ -1,8 +1,16 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <header className="bg-gradient-to-r from-blue-600 to-blue-800 shadow-lg border-b-4 border-blue-700">
@@ -31,7 +39,7 @@ const Header = () => {
               <span>Inicio</span>
             </Link>
             <Link 
-              to="/canchas" 
+              to="/buscar" 
               className="text-white hover:text-blue-100 font-medium px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-all duration-200 flex items-center space-x-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,25 +56,57 @@ const Header = () => {
               </svg>
               <span>Mis Reservas</span>
             </Link>
+            {/* Menú de administración solo para CLUB */}
+            {user && user.tipo && user.tipo.toLowerCase() === 'club' && (
+              <Link 
+                to="/administracion" 
+                className="bg-yellow-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-yellow-600 transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Administración</span>
+              </Link>
+            )}
             <div className="h-6 w-px bg-white bg-opacity-30 mx-2"></div>
-            <Link 
-              to="/registrar-club" 
-              className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              <span>Registrar Club</span>
-            </Link>
-            <Link 
-              to="/login" 
-              className="bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              <span>Iniciar Sesión</span>
-            </Link>
+            {/* Mostrar login o usuario logueado */}
+            {!user ? (
+              <>
+                <Link 
+                  to="/registrar" 
+                  className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  <span>Registrarse</span>
+                </Link>
+                <Link 
+                  to="/login" 
+                  className="bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span>Iniciar Sesión</span>
+                </Link>
+              </>
+            ) : (
+              <div className="flex items-center space-x-3">
+                <span className="text-white font-semibold text-sm bg-blue-700 px-3 py-1 rounded-lg">
+                  {user.nombre} <span className="ml-2 text-xs font-normal bg-white bg-opacity-20 px-2 py-1 rounded">{user.tipo}</span>
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7" />
+                  </svg>
+                  <span>Salir</span>
+                </button>
+              </div>
+            )}
           </nav>
 
           {/* Mobile menu button */}
