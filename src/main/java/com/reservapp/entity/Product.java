@@ -11,6 +11,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "products")
@@ -20,12 +22,17 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
     @Column(nullable = false)
     private String nombre;
     
+    @Size(max = 1000, message = "La descripción no puede exceder 1000 caracteres")
     @Column(columnDefinition = "TEXT")
     private String descripcion;
     
+    @NotBlank(message = "El tipo es obligatorio")
+    @Size(min = 2, max = 50, message = "El tipo debe tener entre 2 y 50 caracteres")
     @Column(nullable = false)
     private String tipo;
     
