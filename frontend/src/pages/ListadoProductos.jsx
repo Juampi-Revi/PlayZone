@@ -2,71 +2,83 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const ListadoProductos = () => {
-  const [productos, setProductos] = useState([]);
+const ListadoCanchas = () => {
+  const [canchas, setCanchas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [deleteLoading, setDeleteLoading] = useState(null);
+  const [error, setError] = useState('');
+  const [filterDeporte, setFilterDeporte] = useState('');
+  const [filterDisponible, setFilterDisponible] = useState('');
+  const [deportes, setDeportes] = useState([]);
 
   useEffect(() => {
-    fetchProductos();
+    fetchCanchas();
+    fetchDeportes();
   }, []);
 
-  const fetchProductos = async () => {
+  const fetchCanchas = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:8082/api/products');
-      setProductos(response.data);
-      setError(null);
+      const response = await axios.get('http://localhost:8082/api/canchas');
+      setCanchas(response.data);
+      setError('');
     } catch (err) {
-      console.error('Error al cargar productos:', err);
-      setError('Error al cargar los productos. Por favor, intenta de nuevo.');
+      console.error('Error fetching canchas:', err);
+      setError('Error al cargar las canchas');
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchDeportes = async () => {
+    try {
+      const response = await axios.get('http://localhost:8082/api/canchas/deportes');
+      setDeportes(response.data);
+    } catch (err) {
+      console.error('Error fetching deportes:', err);
+    }
+  };
+
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar esta cancha?')) {
       return;
     }
 
-    setDeleteLoading(id);
     try {
-      await axios.delete(`http://localhost:8082/api/products/${id}`);
-      setProductos(productos.filter(producto => producto.id !== id));
+      await axios.delete(`http://localhost:8082/api/canchas/${id}`);
+      setCanchas(canchas.filter(cancha => cancha.id !== id));
     } catch (err) {
-      console.error('Error al eliminar producto:', err);
-      alert('Error al eliminar el producto. Por favor, intenta de nuevo.');
-    } finally {
-      setDeleteLoading(null);
+      console.error('Error deleting cancha:', err);
+      alert('Error al eliminar la cancha');
     }
   };
+
+  const handleToggleDisponibilidad = async (id) => {
+    try {
+      const response = await axios.patch(`http://localhost:8082/api/canchas/${id}/toggle-disponibilidad`);
+      setCanchas(canchas.map(cancha => 
+        cancha.id === id ? response.data : cancha
+      ));
+    } catch (err) {
+      console.error('Error toggling disponibilidad:', err);
+      alert('Error al cambiar la disponibilidad');
+    }
+  };
+
+  const filteredCanchas = canchas.filter(cancha => {
+    const matchesDeporte = !filterDeporte || cancha.deporte === filterDeporte;
+    const matchesDisponible = !filterDisponible || 
+      (filterDisponible === 'disponible' && cancha.disponible) ||
+      (filterDisponible === 'no-disponible' && !cancha.disponible);
+    
+    return matchesDeporte && matchesDisponible;
+  });
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando productos...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button 
-            onClick={fetchProductos}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-          >
-            Reintentar
-          </button>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando canchas...</p>
         </div>
       </div>
     );
@@ -76,178 +88,238 @@ const ListadoProductos = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              Listado de Productos
-            </h1>
-            <p className="text-gray-600">
-              Gestiona todos los productos de tu catálogo
-            </p>
-          </div>
-          <Link
-            to="/administracion/agregar"
-            className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors mt-4 sm:mt-0"
-          >
-            ➕ Agregar Producto
-          </Link>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <div className="text-2xl font-bold text-blue-600 mb-2">{productos.length}</div>
-            <div className="text-gray-600">Total Productos</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <div className="text-2xl font-bold text-green-600 mb-2">
-              {productos.filter(p => p.imagenes && p.imagenes.length > 0).length}
-            </div>
-            <div className="text-gray-600">Con Imágenes</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <div className="text-2xl font-bold text-purple-600 mb-2">
-              {new Set(productos.map(p => p.tipo)).size}
-            </div>
-            <div className="text-gray-600">Categorías</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <div className="text-2xl font-bold text-orange-600 mb-2">
-              {productos.filter(p => p.descripcion && p.descripcion.length > 0).length}
-            </div>
-            <div className="text-gray-600">Con Descripción</div>
-          </div>
-        </div>
-
-        {/* Products Table */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          {productos.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-gray-400 text-6xl mb-4">📦</div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                No hay productos
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Comienza agregando tu primer producto al catálogo
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                Administrar Canchas
+              </h1>
+              <p className="text-gray-600">
+                Gestiona todas las canchas deportivas del sistema
               </p>
+            </div>
+            <Link
+              to="/administracion/agregar"
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            >
+              + Agregar Cancha
+            </Link>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">
+              {error}
+            </div>
+          )}
+
+          {/* Filters */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Filtros</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Deporte
+                </label>
+                <select
+                  value={filterDeporte}
+                  onChange={(e) => setFilterDeporte(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Todos los deportes</option>
+                  {deportes.map(deporte => (
+                    <option key={deporte} value={deporte}>{deporte}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Disponibilidad
+                </label>
+                <select
+                  value={filterDisponible}
+                  onChange={(e) => setFilterDisponible(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Todas</option>
+                  <option value="disponible">Disponibles</option>
+                  <option value="no-disponible">No disponibles</option>
+                </select>
+              </div>
+
+              <div className="flex items-end">
+                <button
+                  onClick={() => {
+                    setFilterDeporte('');
+                    setFilterDisponible('');
+                  }}
+                  className="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
+                >
+                  Limpiar Filtros
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <div className="text-2xl font-bold text-blue-600">{canchas.length}</div>
+              <div className="text-sm text-gray-600">Total Canchas</div>
+            </div>
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <div className="text-2xl font-bold text-green-600">
+                {canchas.filter(c => c.disponible).length}
+              </div>
+              <div className="text-sm text-gray-600">Disponibles</div>
+            </div>
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <div className="text-2xl font-bold text-red-600">
+                {canchas.filter(c => !c.disponible).length}
+              </div>
+              <div className="text-sm text-gray-600">No Disponibles</div>
+            </div>
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <div className="text-2xl font-bold text-purple-600">{deportes.length}</div>
+              <div className="text-sm text-gray-600">Deportes</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Canchas List */}
+        {filteredCanchas.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <div className="text-6xl mb-4">🏟️</div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              No se encontraron canchas
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {canchas.length === 0 
+                ? 'Aún no hay canchas registradas en el sistema.'
+                : 'No hay canchas que coincidan con los filtros aplicados.'
+              }
+            </p>
+            {canchas.length === 0 && (
               <Link
                 to="/administracion/agregar"
                 className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
               >
-                Agregar Primer Producto
+                Agregar Primera Cancha
               </Link>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Producto
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Categoría
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Descripción
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Imágenes
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {productos.map((producto) => (
-                    <tr key={producto.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-12 w-12">
-                            <img
-                              className="h-12 w-12 rounded-lg object-cover"
-                              src={producto.imagenes && producto.imagenes.length > 0 
-                                ? producto.imagenes[0] 
-                                : 'https://via.placeholder.com/48x48?text=Sin+Img'
-                              }
-                              alt={producto.nombre}
-                              onError={(e) => {
-                                e.target.src = 'https://via.placeholder.com/48x48?text=Error';
-                              }}
-                            />
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {producto.nombre}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              ID: {producto.id}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {producto.tipo}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 max-w-xs truncate">
-                          {producto.descripcion || 'Sin descripción'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {producto.imagenes ? producto.imagenes.length : 0} imagen(es)
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <Link
-                            to={`/detalle/${producto.id}`}
-                            className="text-blue-600 hover:text-blue-900 transition-colors"
-                          >
-                            Ver
-                          </Link>
-                          <button
-                            onClick={() => handleDelete(producto.id)}
-                            disabled={deleteLoading === producto.id}
-                            className="text-red-600 hover:text-red-900 transition-colors disabled:opacity-50"
-                          >
-                            {deleteLoading === producto.id ? 'Eliminando...' : 'Eliminar'}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filteredCanchas.map((cancha) => (
+              <div key={cancha.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                {/* Image */}
+                <div className="relative h-48 overflow-hidden">
+                  <img
+                    src={cancha.imagenes && cancha.imagenes.length > 0 
+                      ? cancha.imagenes[0] 
+                      : 'https://via.placeholder.com/400x300?text=Sin+Imagen'
+                    }
+                    alt={cancha.nombre}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/400x300?text=Error+Imagen';
+                    }}
+                  />
+                  <div className="absolute top-2 right-2 flex space-x-2">
+                    <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                      {cancha.deporte}
+                    </span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      cancha.disponible 
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-red-600 text-white'
+                    }`}>
+                      {cancha.disponible ? 'Disponible' : 'Ocupada'}
+                    </span>
+                  </div>
+                </div>
 
-        {/* Actions */}
-        <div className="mt-8 flex flex-col sm:flex-row justify-between items-center">
-          <div className="text-sm text-gray-600 mb-4 sm:mb-0">
-            Mostrando {productos.length} producto{productos.length !== 1 ? 's' : ''}
+                {/* Content */}
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    {cancha.nombre}
+                  </h3>
+                  
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                    {cancha.descripcion || 'Sin descripción'}
+                  </p>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="truncate">{cancha.ubicacion}</span>
+                    </div>
+                    
+                    <div className="flex items-center text-sm text-gray-600">
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                      <span className="font-semibold text-green-600">${cancha.precioPorHora?.toLocaleString()}/hora</span>
+                    </div>
+
+                    {cancha.horario && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="truncate">{cancha.horario}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex justify-between items-center">
+                    <div className="flex space-x-2">
+                      <Link
+                        to={`/detalle/${cancha.id}`}
+                        className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
+                      >
+                        Ver
+                      </Link>
+                      <Link
+                        to={`/administracion/editar/${cancha.id}`}
+                        className="bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700 transition-colors"
+                      >
+                        Editar
+                      </Link>
+                    </div>
+                    
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleToggleDisponibilidad(cancha.id)}
+                        className={`px-3 py-1 rounded text-sm transition-colors ${
+                          cancha.disponible
+                            ? 'bg-red-600 text-white hover:bg-red-700'
+                            : 'bg-green-600 text-white hover:bg-green-700'
+                        }`}
+                      >
+                        {cancha.disponible ? 'Ocupar' : 'Liberar'}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(cancha.id)}
+                        className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="flex space-x-4">
-            <button
-              onClick={fetchProductos}
-              className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
-            >
-              🔄 Actualizar
-            </button>
-            <Link
-              to="/administracion"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-            >
-              ← Volver al Panel
-            </Link>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default ListadoProductos; 
+export default ListadoCanchas; 

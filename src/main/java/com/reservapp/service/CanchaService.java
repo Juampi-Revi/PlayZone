@@ -43,7 +43,7 @@ public class CanchaService {
         return canchaRepository.save(cancha);
     }
 
-    public Cancha updateCancha(Long id, Cancha canchaDetails) {
+    public Optional<Cancha> updateCancha(Long id, Cancha canchaDetails) {
         Optional<Cancha> canchaOptional = canchaRepository.findById(id);
         if (canchaOptional.isPresent()) {
             Cancha cancha = canchaOptional.get();
@@ -55,9 +55,9 @@ public class CanchaService {
             cancha.setHorario(canchaDetails.getHorario());
             cancha.setImagenes(canchaDetails.getImagenes());
             cancha.setDisponible(canchaDetails.getDisponible());
-            return canchaRepository.save(cancha);
+            return Optional.of(canchaRepository.save(cancha));
         }
-        return null;
+        return Optional.empty();
     }
 
     public boolean deleteCancha(Long id) {
@@ -68,14 +68,22 @@ public class CanchaService {
         return false;
     }
 
-    public boolean toggleDisponibilidad(Long id) {
+    public Optional<Cancha> toggleDisponibilidad(Long id) {
         Optional<Cancha> canchaOptional = canchaRepository.findById(id);
         if (canchaOptional.isPresent()) {
             Cancha cancha = canchaOptional.get();
             cancha.setDisponible(!cancha.getDisponible());
-            canchaRepository.save(cancha);
-            return true;
+            return Optional.of(canchaRepository.save(cancha));
         }
-        return false;
+        return Optional.empty();
+    }
+
+    public List<String> getDeportesDisponibles() {
+        List<Cancha> canchas = canchaRepository.findAll();
+        return canchas.stream()
+                .map(Cancha::getDeporte)
+                .distinct()
+                .sorted()
+                .toList();
     }
 } 
