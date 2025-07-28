@@ -2,14 +2,20 @@ package com.reservapp.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -59,10 +65,20 @@ public class Cancha {
     @Column
     private Boolean disponible = true;
 
+    // Propietario de la cancha (debe ser un usuario de tipo CLUB)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "propietario_id")
+    private Usuario propietario;
+
+    // Configuración de horarios personalizada
+    @OneToOne(mappedBy = "cancha", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private ConfiguracionHorario configuracionHorario;
+
     // Constructors
     public Cancha() {}
 
-    public Cancha(Long id, String nombre, String descripcion, String deporte, String ubicacion, Double precioPorHora, String horario, List<String> imagenes, Boolean disponible) {
+    public Cancha(Long id, String nombre, String descripcion, String deporte, String ubicacion, Double precioPorHora, String horario, List<String> imagenes, Boolean disponible, Usuario propietario) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -72,6 +88,7 @@ public class Cancha {
         this.horario = horario;
         this.imagenes = imagenes;
         this.disponible = disponible;
+        this.propietario = propietario;
     }
 
     // Getters and Setters
@@ -146,4 +163,20 @@ public class Cancha {
     public void setDisponible(Boolean disponible) {
         this.disponible = disponible;
     }
-} 
+
+    public Usuario getPropietario() {
+        return propietario;
+    }
+
+    public void setPropietario(Usuario propietario) {
+        this.propietario = propietario;
+    }
+
+    public ConfiguracionHorario getConfiguracionHorario() {
+        return configuracionHorario;
+    }
+
+    public void setConfiguracionHorario(ConfiguracionHorario configuracionHorario) {
+        this.configuracionHorario = configuracionHorario;
+    }
+}
