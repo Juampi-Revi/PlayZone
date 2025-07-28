@@ -35,4 +35,20 @@ public class UsuarioService {
     public boolean checkPassword(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }
-} 
+
+    /**
+     * Obtiene un usuario por su ID
+     */
+    public Optional<Usuario> findById(Long id) {
+        return usuarioRepository.findById(id);
+    }
+
+    /**
+     * Obtiene el ID del usuario a partir de su email
+     */
+    public Long getUsuarioIdByEmail(String email) {
+        return findByEmail(email)
+                .map(Usuario::getId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
+    }
+}

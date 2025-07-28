@@ -86,4 +86,28 @@ public class CanchaService {
                 .sorted()
                 .toList();
     }
-} 
+
+    public List<Cancha> getCanchasByPropietario(Long propietarioId) {
+        return canchaRepository.findByPropietarioId(propietarioId);
+    }
+
+    public Optional<Cancha> updateCanchaConPropietario(Long id, Cancha canchaDetails) {
+        Optional<Cancha> canchaOptional = canchaRepository.findById(id);
+        if (canchaOptional.isPresent()) {
+            Cancha cancha = canchaOptional.get();
+            cancha.setNombre(canchaDetails.getNombre());
+            cancha.setDescripcion(canchaDetails.getDescripcion());
+            cancha.setDeporte(canchaDetails.getDeporte());
+            cancha.setUbicacion(canchaDetails.getUbicacion());
+            cancha.setPrecioPorHora(canchaDetails.getPrecioPorHora());
+            cancha.setHorario(canchaDetails.getHorario());
+            cancha.setImagenes(canchaDetails.getImagenes());
+            cancha.setDisponible(canchaDetails.getDisponible());
+            if (canchaDetails.getPropietario() != null) {
+                cancha.setPropietario(canchaDetails.getPropietario());
+            }
+            return Optional.of(canchaRepository.save(cancha));
+        }
+        return Optional.empty();
+    }
+}
