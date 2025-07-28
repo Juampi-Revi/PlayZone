@@ -46,7 +46,7 @@ const RegistrarClub = () => {
               Registra tu Club Deportivo
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Únete a ReservApp y lleva tu negocio al siguiente nivel. 
+              Únete a PlayZone y lleva tu negocio al siguiente nivel. 
               Gestiona tus canchas, optimiza tus reservas y llega a más clientes.
             </p>
           </div>
@@ -163,7 +163,7 @@ const RegistrarClub = () => {
             {/* Beneficios */}
             <div className="space-y-6">
               <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg shadow-lg p-8 text-white">
-                <h3 className="text-2xl font-bold mb-4">¿Por qué elegir ReservApp?</h3>
+                <h3 className="text-2xl font-bold mb-4">¿Por qué elegir PlayZone?</h3>
                 <div className="space-y-4">
                   <div className="flex items-start space-x-3">
                     <div className="text-2xl">📈</div>
@@ -235,4 +235,4 @@ const RegistrarClub = () => {
   );
 };
 
-export default RegistrarClub; 
+export default RegistrarClub;

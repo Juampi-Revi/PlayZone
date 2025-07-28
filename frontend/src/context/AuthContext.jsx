@@ -8,6 +8,27 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
+  // Configurar interceptor de axios para agregar token automáticamente
+  useEffect(() => {
+    const interceptor = axios.interceptors.request.use(
+      (config) => {
+        const currentToken = localStorage.getItem('token');
+        if (currentToken) {
+          config.headers.Authorization = `Bearer ${currentToken}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    // Cleanup function para remover el interceptor
+    return () => {
+      axios.interceptors.request.eject(interceptor);
+    };
+  }, []);
+
   useEffect(() => {
     if (token) {
       axios.get('http://localhost:8082/api/auth/me', {
@@ -39,7 +60,7 @@ export const AuthProvider = ({ children }) => {
       setToken(res.data.token);
       localStorage.setItem('token', res.data.token);
       setUser(res.data.user);
-      return { success: true };
+      return { success: true, user: res.data.user };
     } else {
       return { success: false, message: res.data?.message || 'Error desconocido' };
     }
@@ -70,4 +91,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext); 
+export const useAuth = () => useContext(AuthContext);

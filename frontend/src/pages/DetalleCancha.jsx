@@ -1,13 +1,18 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import GaleriaImagenes from '../components/GaleriaImagenes';
+import FormularioReserva from '../components/FormularioReserva';
+import { useAuth } from '../context/AuthContext';
 
 const DetalleCancha = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [cancha, setCancha] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [mostrarFormularioReserva, setMostrarFormularioReserva] = useState(false);
 
   useEffect(() => {
     const fetchCancha = async () => {
@@ -30,6 +35,24 @@ const DetalleCancha = () => {
 
     fetchCancha();
   }, [id]);
+
+  const handleReservarCancha = () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    if (user.tipo.toLowerCase() !== 'jugador') {
+      alert('Solo los jugadores pueden hacer reservas');
+      return;
+    }
+
+    setMostrarFormularioReserva(true);
+  };
+
+  const cerrarFormularioReserva = () => {
+    setMostrarFormularioReserva(false);
+  };
 
   if (loading) {
     return (
@@ -181,6 +204,7 @@ const DetalleCancha = () => {
               {/* Botones de Acción */}
               <div className="flex space-x-4 pt-6">
                 <button 
+                  onClick={handleReservarCancha}
                   className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-colors ${
                     cancha.disponible
                       ? 'bg-green-600 text-white hover:bg-green-700'
@@ -221,8 +245,16 @@ const DetalleCancha = () => {
           </div>
         </div>
       </div>
+
+      {/* Formulario de Reserva Modal */}
+      {mostrarFormularioReserva && (
+        <FormularioReserva 
+          cancha={cancha}
+          onClose={cerrarFormularioReserva}
+        />
+      )}
     </div>
   );
 };
 
-export default DetalleCancha; 
+export default DetalleCancha;

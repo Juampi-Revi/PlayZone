@@ -104,10 +104,17 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> me(@AuthenticationPrincipal Usuario usuario) {
-        if (usuario == null) {
+    public ResponseEntity<?> me(@AuthenticationPrincipal String email) {
+        if (email == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("success", false, "message", "No autenticado"));
         }
+        
+        Optional<Usuario> usuarioOpt = usuarioService.findByEmail(email);
+        if (usuarioOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("success", false, "message", "Usuario no encontrado"));
+        }
+        
+        Usuario usuario = usuarioOpt.get();
         return ResponseEntity.ok(Map.of(
             "success", true,
             "user", Map.of(
@@ -118,4 +125,4 @@ public class AuthController {
             )
         ));
     }
-} 
+}

@@ -27,7 +27,14 @@ const Login = () => {
     try {
       const res = await login(formData.email, formData.password);
       if (res.success) {
-        navigate('/');
+        // Redirect to appropriate dashboard based on user role
+        if (res.user.tipo === 'CLUB') {
+          navigate('/dashboard-admin');
+        } else if (res.user.tipo === 'JUGADOR') {
+          navigate('/dashboard-jugador');
+        } else {
+          navigate('/');
+        }
       } else {
         setError(res.message || 'Credenciales incorrectas');
       }
@@ -51,7 +58,7 @@ const Login = () => {
             Iniciar Sesión
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Accede a tu cuenta de ReservApp
+            Accede a tu cuenta de PlayZone
           </p>
         </div>
 
@@ -136,4 +143,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Login;

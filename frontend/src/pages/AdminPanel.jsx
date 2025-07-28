@@ -3,32 +3,32 @@ import { Link } from 'react-router-dom';
 const AdminPanel = () => {
   const adminCards = [
     {
-      title: 'Agregar Producto',
-      description: 'Crear un nuevo producto en el sistema',
-      icon: '➕',
+      title: 'Agregar Cancha',
+      description: 'Crear una nueva cancha en el sistema',
+      icon: '🏟️',
       link: '/administracion/agregar',
       color: 'bg-green-500 hover:bg-green-600'
     },
     {
-      title: 'Listado de Productos',
-      description: 'Ver y gestionar todos los productos existentes',
+      title: 'Gestionar Canchas',
+      description: 'Ver y gestionar todas las canchas existentes',
       icon: '📋',
       link: '/administracion/listado',
       color: 'bg-blue-500 hover:bg-blue-600'
     },
     {
-      title: 'Estadísticas',
-      description: 'Ver métricas y reportes del sistema',
-      icon: '📊',
+      title: 'Reservas',
+      description: 'Ver y gestionar las reservas de tus canchas',
+      icon: '📅',
       link: '#',
       color: 'bg-purple-500 hover:bg-purple-600'
     },
     {
-      title: 'Configuración',
-      description: 'Ajustar configuraciones del sistema',
-      icon: '⚙️',
+      title: 'Estadísticas',
+      description: 'Ver métricas y reportes de tu club',
+      icon: '📊',
       link: '#',
-      color: 'bg-gray-500 hover:bg-gray-600'
+      color: 'bg-orange-500 hover:bg-orange-600'
     }
   ];
 
@@ -41,7 +41,7 @@ const AdminPanel = () => {
             Panel de Administración
           </h1>
           <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-            Gestiona tu catálogo de productos, revisa estadísticas y configura tu tienda
+            Gestiona tus canchas deportivas, revisa reservas y configura tu club
           </p>
         </div>
       </div>
@@ -51,15 +51,15 @@ const AdminPanel = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow-md p-6 text-center">
             <div className="text-3xl font-bold text-blue-600 mb-2">0</div>
-            <div className="text-gray-600">Productos Totales</div>
+            <div className="text-gray-600">Canchas Totales</div>
           </div>
           <div className="bg-white rounded-lg shadow-md p-6 text-center">
             <div className="text-3xl font-bold text-green-600 mb-2">0</div>
-            <div className="text-gray-600">Productos Activos</div>
+            <div className="text-gray-600">Canchas Activas</div>
           </div>
           <div className="bg-white rounded-lg shadow-md p-6 text-center">
             <div className="text-3xl font-bold text-orange-600 mb-2">0</div>
-            <div className="text-gray-600">Categorías</div>
+            <div className="text-gray-600">Reservas del Mes</div>
           </div>
         </div>
       </div>
@@ -71,7 +71,7 @@ const AdminPanel = () => {
             Funciones de Administración
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Selecciona la función que deseas realizar para gestionar tu plataforma
+            Selecciona la función que deseas realizar para gestionar tu club deportivo
           </p>
         </div>
 
@@ -96,9 +96,9 @@ const AdminPanel = () => {
           </h3>
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="text-center py-8">
-              <div className="text-gray-400 text-4xl mb-4">📝</div>
+              <div className="text-gray-400 text-4xl mb-4">🏟️</div>
               <p className="text-gray-600">
-                No hay actividad reciente. Comienza agregando tu primer producto.
+                No hay actividad reciente. Comienza agregando tu primera cancha.
               </p>
             </div>
           </div>
@@ -114,13 +114,13 @@ const AdminPanel = () => {
               to="/administracion/agregar"
               className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors text-center"
             >
-              Agregar Producto Rápido
+              Agregar Cancha Rápido
             </Link>
             <Link
               to="/administracion/listado"
               className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-center"
             >
-              Ver Todos los Productos
+              Ver Todas las Canchas
             </Link>
             <button className="bg-gray-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors">
               Exportar Datos
@@ -136,7 +136,7 @@ const AdminPanel = () => {
             </h3>
             <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
               Nuestro equipo de soporte está disponible para ayudarte con cualquier pregunta
-              sobre la administración de tu plataforma.
+              sobre la administración de tu club deportivo.
             </p>
             <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
               <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
@@ -153,4 +153,4 @@ const AdminPanel = () => {
   );
 };
 
-export default AdminPanel; 
+export default AdminPanel;
