@@ -13,7 +13,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-emerald-500 via-teal-600 to-cyan-700 shadow-2xl border-b border-emerald-400/20 backdrop-blur-sm sticky top-0 z-50">
+    <header className="bg-gradient-to-r from-emerald-500 via-teal-600 to-cyan-700 shadow-2xl border-b border-emerald-400/20 backdrop-blur-sm sticky top-0 z-40">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
@@ -52,21 +52,7 @@ const Header = () => {
               <span>Buscar Canchas</span>
             </Link>
             
-            {/* Dashboard link for authenticated users */}
-            {user && (
-              <Link 
-                to={user.tipo === 'CLUB' ? '/dashboard-admin' : '/dashboard-jugador'}
-                className="group text-white hover:text-yellow-300 font-semibold px-4 py-2.5 rounded-xl hover:bg-white hover:bg-opacity-10 transition-all duration-300 flex items-center space-x-2 hover:scale-105 transform"
-              >
-                <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <span>Dashboard</span>
-              </Link>
-            )}
-            
             <div className="h-8 w-px bg-white bg-opacity-30 mx-3"></div>
-            
             {/* Mostrar login o usuario logueado */}
             {!user ? (
               <div className="flex items-center space-x-3">
@@ -91,16 +77,19 @@ const Header = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-3 bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white border-opacity-30">
+                <Link 
+                  to={user.tipo === 'CLUB' ? '/dashboard-admin' : '/dashboard-jugador'}
+                  className="group flex items-center space-x-3 bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white border-opacity-30 hover:bg-white hover:bg-opacity-30 transition-all duration-300 hover:scale-105 transform"
+                >
                   <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-lg flex items-center justify-center">
                     <span className="text-gray-900 font-bold text-sm">
                       {user.nombre ? user.nombre.charAt(0).toUpperCase() : 'U'}
                     </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-white font-bold text-sm">{user.nombre}</span>
+                    <span className="text-white font-bold text-sm group-hover:text-yellow-300 transition-colors">{user.nombre}</span>
                   </div>
-                </div>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="group bg-white bg-opacity-20 backdrop-blur-sm text-white px-4 py-2.5 rounded-xl font-bold hover:bg-red-500 hover:bg-opacity-90 transition-all duration-300 flex items-center space-x-2 border border-white border-opacity-30 hover:scale-105 transform"
@@ -154,22 +143,6 @@ const Header = () => {
                 <span>Buscar Canchas</span>
               </Link>
               
-              {/* Dashboard link for authenticated users */}
-              {user && (
-                <Link 
-                  to={user.tipo === 'CLUB' ? '/dashboard-admin' : '/dashboard-jugador'}
-                  className="group text-white hover:text-yellow-300 font-semibold px-4 py-3 rounded-xl hover:bg-white hover:bg-opacity-10 transition-all duration-300 flex items-center space-x-3 hover:scale-105 transform"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                  <span>Dashboard</span>
-                </Link>
-              )}
-              
-
-              
               <div className="h-px bg-white bg-opacity-20 my-4"></div>
               
               {!user ? (
@@ -197,19 +170,23 @@ const Header = () => {
                 </>
               ) : (
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-3 bg-white bg-opacity-20 backdrop-blur-sm px-4 py-3 rounded-xl border border-white border-opacity-30">
+                  <Link 
+                    to={user.tipo === 'CLUB' ? '/dashboard-admin' : '/dashboard-jugador'}
+                    className="group flex items-center space-x-3 bg-white bg-opacity-20 backdrop-blur-sm px-4 py-3 rounded-xl border border-white border-opacity-30 hover:bg-white hover:bg-opacity-30 transition-all duration-300 hover:scale-105 transform"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
                     <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl flex items-center justify-center">
                       <span className="text-gray-900 font-bold">
                         {user.nombre ? user.nombre.charAt(0).toUpperCase() : 'U'}
                       </span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-white font-bold">{user.nombre}</span>
+                      <span className="text-white font-bold group-hover:text-yellow-300 transition-colors">{user.nombre}</span>
                       <span className="text-emerald-200 text-sm font-medium bg-emerald-500 bg-opacity-30 px-2 py-1 rounded-full">
                         {user.tipo}
                       </span>
                     </div>
-                  </div>
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="group w-full bg-white bg-opacity-20 backdrop-blur-sm text-white px-4 py-3 rounded-xl font-bold hover:bg-red-500 hover:bg-opacity-90 transition-all duration-300 flex items-center justify-center space-x-3 border border-white border-opacity-30 hover:scale-105 transform"

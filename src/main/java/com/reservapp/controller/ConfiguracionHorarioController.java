@@ -16,13 +16,16 @@ import org.springframework.web.bind.annotation.*;
 import com.reservapp.entity.Cancha;
 import com.reservapp.entity.ConfiguracionHorario;
 import com.reservapp.entity.Usuario;
+import com.reservapp.security.JwtUtil;
 import com.reservapp.service.CanchaService;
 import com.reservapp.service.ConfiguracionHorarioService;
 import com.reservapp.service.UsuarioService;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestController
 @RequestMapping("/api/configuracion-horarios")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://127.0.0.1:5174", "http://localhost:5175", "http://127.0.0.1:5175", "http://localhost:3000", "http://127.0.0.1:3000"})
 public class ConfiguracionHorarioController {
 
     @Autowired
@@ -33,6 +36,9 @@ public class ConfiguracionHorarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     /**
      * Obtiene la configuración de horarios de una cancha
@@ -210,16 +216,25 @@ public class ConfiguracionHorarioController {
      */
     @GetMapping("/mis-canchas")
     @PreAuthorize("hasAuthority('CLUB')")
-    public ResponseEntity<Map<String, Object>> getMisCanchas(@AuthenticationPrincipal String email) {
+    public ResponseEntity<Map<String, Object>> getMisCanchas(HttpServletRequest request) {
         try {
-            Usuario usuario = usuarioService.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            // Obtener el token del header Authorization
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("error", "Token de autorización requerido");
+                return ResponseEntity.status(401).body(error);
+            }
             
-            List<Cancha> canchas = canchaService.getCanchasByPropietario(usuario.getId());
+            String token = authHeader.substring(7);
+            Long usuarioId = jwtUtil.getUserIdFromToken(token);
+            
+            List<Cancha> canchas = canchaService.getCanchasByPropietario(usuarioId);
             
             Map<String, Object> response = new HashMap<>();
             response.put("canchas", canchas);
             response.put("total", canchas.size());
+            response.put("usuarioId", usuarioId); // Para debug
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {

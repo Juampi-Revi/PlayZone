@@ -2,6 +2,7 @@ package com.reservapp.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -68,11 +69,12 @@ public class Cancha {
     // Propietario de la cancha (debe ser un usuario de tipo CLUB)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "propietario_id")
+    @JsonIgnore
     private Usuario propietario;
 
     // Configuración de horarios personalizada
     @OneToOne(mappedBy = "cancha", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @JsonIgnore
     private ConfiguracionHorario configuracionHorario;
 
     // Constructors

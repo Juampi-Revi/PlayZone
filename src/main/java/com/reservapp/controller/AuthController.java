@@ -81,19 +81,22 @@ public class AuthController {
         usuario.setEmail(request.email);
         usuario.setPassword(request.password);
         usuario.setTipo(request.tipo.toUpperCase());
-        usuario.setActivo(true);
-        Usuario nuevo = usuarioService.registerUsuario(usuario);
-        String token = jwtUtil.generateToken(nuevo.getEmail(), nuevo.getTipo(), nuevo.getId());
+
+        Usuario usuarioGuardado = usuarioService.registerUsuario(usuario);
+        
+        String token = jwtUtil.generateToken(usuarioGuardado.getEmail(), usuarioGuardado.getTipo(), usuarioGuardado.getId());
+        
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("message", "Usuario registrado exitosamente");
         response.put("token", token);
         response.put("user", Map.of(
-                "id", nuevo.getId(),
-                "nombre", nuevo.getNombre(),
-                "email", nuevo.getEmail(),
-                "tipo", nuevo.getTipo()
+            "id", usuarioGuardado.getId(),
+            "nombre", usuarioGuardado.getNombre(),
+            "email", usuarioGuardado.getEmail(),
+            "tipo", usuarioGuardado.getTipo()
         ));
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

@@ -1,6 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 import Sidebar from '../components/Sidebar';
+
+// Heroicons imports
+import { 
+  BuildingOfficeIcon,
+  CalendarDaysIcon,
+  CurrencyDollarIcon,
+  MagnifyingGlassIcon,
+  HeartIcon,
+  PlayIcon
+} from '@heroicons/react/24/outline';
 
 // Player components
 import PerfilJugador from './jugador/PerfilJugador';
@@ -17,6 +28,46 @@ const Dashboard = () => {
   const { user } = useAuth();
   const [activeSection, setActiveSection] = useState('overview');
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [stats, setStats] = useState({
+    totalCanchas: 0,
+    reservasHoy: 0,
+    ingresosMes: 0,
+    loading: true
+  });
+
+  useEffect(() => {
+    if (user?.tipo === 'CLUB') {
+      fetchClubStats();
+    }
+  }, [user]);
+
+  const fetchClubStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Obtener canchas del club
+      const canchasResponse = await axios.get('/api/configuracion-horarios/mis-canchas', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // TODO: Implementar endpoints para reservas e ingresos
+      // Por ahora solo mostramos las canchas reales
+      setStats({
+        totalCanchas: canchasResponse.data.total || 0,
+        reservasHoy: 0, // TODO: Implementar
+        ingresosMes: 0, // TODO: Implementar
+        loading: false
+      });
+    } catch (error) {
+      console.error('Error fetching club stats:', error);
+      setStats({
+        totalCanchas: 0,
+        reservasHoy: 0,
+        ingresosMes: 0,
+        loading: false
+      });
+    }
+  };
 
   const toggleSidebar = () => {
     setSidebarExpanded(!sidebarExpanded);
@@ -60,11 +111,13 @@ const Dashboard = () => {
               <div className="bg-blue-50 rounded-lg p-6">
                 <div className="flex items-center">
                   <div className="p-3 bg-blue-100 rounded-lg">
-                    <span className="text-2xl">🏟️</span>
+                    <BuildingOfficeIcon className="h-8 w-8 text-blue-600" />
                   </div>
                   <div className="ml-4">
                     <h3 className="text-lg font-semibold text-gray-900">Canchas</h3>
-                    <p className="text-3xl font-bold text-blue-600">5</p>
+                    <p className="text-3xl font-bold text-blue-600">
+                      {stats.loading ? '...' : stats.totalCanchas}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -72,11 +125,13 @@ const Dashboard = () => {
               <div className="bg-green-50 rounded-lg p-6">
                 <div className="flex items-center">
                   <div className="p-3 bg-green-100 rounded-lg">
-                    <span className="text-2xl">📅</span>
+                    <CalendarDaysIcon className="h-8 w-8 text-green-600" />
                   </div>
                   <div className="ml-4">
                     <h3 className="text-lg font-semibold text-gray-900">Reservas Hoy</h3>
-                    <p className="text-3xl font-bold text-green-600">12</p>
+                    <p className="text-3xl font-bold text-green-600">
+                      {stats.loading ? '...' : stats.reservasHoy}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -84,11 +139,13 @@ const Dashboard = () => {
               <div className="bg-purple-50 rounded-lg p-6">
                 <div className="flex items-center">
                   <div className="p-3 bg-purple-100 rounded-lg">
-                    <span className="text-2xl">💰</span>
+                    <CurrencyDollarIcon className="h-8 w-8 text-purple-600" />
                   </div>
                   <div className="ml-4">
                     <h3 className="text-lg font-semibold text-gray-900">Ingresos del Mes</h3>
-                    <p className="text-3xl font-bold text-purple-600">$2,450</p>
+                    <p className="text-3xl font-bold text-purple-600">
+                      {stats.loading ? '...' : `$${stats.ingresosMes.toLocaleString()}`}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -98,23 +155,23 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <button
                 onClick={() => setActiveSection('club-management')}
-                className="p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
               >
-                <span className="text-xl mb-2 block">🏢</span>
+                <BuildingOfficeIcon className="h-6 w-6 mr-2" />
                 Gestionar Club
               </button>
               <button
                 onClick={() => setActiveSection('reservations')}
-                className="p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center"
               >
-                <span className="text-xl mb-2 block">📅</span>
+                <CalendarDaysIcon className="h-6 w-6 mr-2" />
                 Ver Reservas
               </button>
               <button
                 onClick={() => setActiveSection('finances')}
-                className="p-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                className="p-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center"
               >
-                <span className="text-xl mb-2 block">💰</span>
+                <CurrencyDollarIcon className="h-6 w-6 mr-2" />
                 Ver Reportes
               </button>
             </div>
@@ -137,7 +194,7 @@ const Dashboard = () => {
               <div className="bg-blue-50 rounded-lg p-6">
                 <div className="flex items-center">
                   <div className="p-3 bg-blue-100 rounded-lg">
-                    <span className="text-2xl">📅</span>
+                    <CalendarDaysIcon className="h-8 w-8 text-blue-600" />
                   </div>
                   <div className="ml-4">
                     <h3 className="text-lg font-semibold text-gray-900">Reservas</h3>
@@ -149,7 +206,7 @@ const Dashboard = () => {
               <div className="bg-green-50 rounded-lg p-6">
                 <div className="flex items-center">
                   <div className="p-3 bg-green-100 rounded-lg">
-                    <span className="text-2xl">⚽</span>
+                    <PlayIcon className="h-8 w-8 text-green-600" />
                   </div>
                   <div className="ml-4">
                     <h3 className="text-lg font-semibold text-gray-900">Partidos</h3>
@@ -161,7 +218,7 @@ const Dashboard = () => {
               <div className="bg-purple-50 rounded-lg p-6">
                 <div className="flex items-center">
                   <div className="p-3 bg-purple-100 rounded-lg">
-                    <span className="text-2xl">❤️</span>
+                    <HeartIcon className="h-8 w-8 text-purple-600" />
                   </div>
                   <div className="ml-4">
                     <h3 className="text-lg font-semibold text-gray-900">Favoritos</h3>
@@ -175,23 +232,23 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <button
                 onClick={() => window.location.href = '/canchas'}
-                className="p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
               >
-                <span className="text-xl mb-2 block">🔍</span>
+                <MagnifyingGlassIcon className="h-6 w-6 mr-2" />
                 Buscar Canchas
               </button>
               <button
                 onClick={() => setActiveSection('matches')}
-                className="p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center"
               >
-                <span className="text-xl mb-2 block">⚽</span>
+                <PlayIcon className="h-6 w-6 mr-2" />
                 Mis Partidos
               </button>
               <button
                 onClick={() => setActiveSection('favorites')}
-                className="p-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                className="p-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center"
               >
-                <span className="text-xl mb-2 block">❤️</span>
+                <HeartIcon className="h-6 w-6 mr-2" />
                 Mis Favoritos
               </button>
             </div>
@@ -230,7 +287,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       <Sidebar 
         menuItems={getMenuItems()} 
         activeSection={activeSection} 
@@ -240,7 +297,7 @@ const Dashboard = () => {
         onToggle={toggleSidebar}
       />
       <div 
-        className={`flex-1 overflow-auto transition-all duration-300 ease-in-out ${
+        className={`flex-1 transition-all duration-300 ease-in-out ${
           sidebarExpanded ? 'ml-64' : 'ml-16'
         }`}
       >

@@ -13,6 +13,8 @@ import AgregarCancha from './pages/AgregarCancha';
 import ListadoCanchas from './pages/ListadoCanchas';
 import MisCanchas from './pages/MisCanchas';
 import Dashboard from './pages/Dashboard';
+import DashboardAdmin from './pages/DashboardAdmin';
+import GestionClub from './pages/admin/GestionClub';
 import PrivateRoute from './components/PrivateRoute';
 import NotFound from './pages/NotFound';
 
@@ -95,7 +97,15 @@ function App() {
               path="/dashboard-admin" 
               element={
                 <PrivateRoute allowedRoles={['CLUB']}>
-                  <Dashboard />
+                  <DashboardAdmin />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/admin/club" 
+              element={
+                <PrivateRoute allowedRoles={['CLUB']}>
+                  <GestionClub />
                 </PrivateRoute>
               } 
             />

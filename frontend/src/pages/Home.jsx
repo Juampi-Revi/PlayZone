@@ -317,6 +317,190 @@ const Home = () => {
         </div>
       </div>
 
+      {/* Pricing Section for Clubs */}
+      <div className="py-24 bg-gradient-to-b from-gray-50 to-gray-100">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-20">
+            <div className="inline-block bg-emerald-100 text-emerald-800 px-4 py-2 rounded-full text-sm font-semibold mb-6">
+              💰 Planes para Clubes
+            </div>
+            <h2 className="text-5xl font-black text-gray-900 mb-6">
+              Elige el Plan <span className="text-emerald-600">Perfecto</span> para tu Club
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Desde clubes pequeños hasta grandes complejos deportivos. Tenemos el plan ideal para hacer crecer tu negocio.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            {/* Plan Básico */}
+            <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:scale-105">
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Básico</h3>
+                <p className="text-gray-600 mb-6">Perfecto para empezar</p>
+                <div className="mb-6">
+                  <span className="text-5xl font-black text-gray-900">$0</span>
+                  <span className="text-gray-600 text-lg">/mes</span>
+                </div>
+                <p className="text-sm text-gray-500">Gratis para siempre</p>
+              </div>
+              
+              <div className="space-y-4 mb-8">
+                {[
+                  'Hasta 2 canchas',
+                  'Gestión básica de reservas',
+                  'Dashboard simple',
+                  'Soporte por email',
+                  'Comisión 8% por reserva'
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-gray-700">{feature}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <Link 
+                to="/registrar"
+                className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all duration-300 text-center block"
+              >
+                Empezar Gratis
+              </Link>
+            </div>
+
+            {/* Plan Pro - Destacado */}
+            <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-3xl p-8 shadow-2xl hover:shadow-emerald-400/25 transition-all duration-300 text-white relative hover:scale-105 transform">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-yellow-400 text-gray-900 px-6 py-2 rounded-full text-sm font-bold">
+                  🔥 MÁS POPULAR
+                </span>
+              </div>
+              
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold mb-2">Pro</h3>
+                <p className="text-emerald-100 mb-6">Para clubes en crecimiento</p>
+                <div className="mb-6">
+                  <span className="text-5xl font-black">$49</span>
+                  <span className="text-emerald-200 text-lg">/mes</span>
+                </div>
+                <p className="text-sm text-emerald-200">Facturación mensual</p>
+              </div>
+              
+              <div className="space-y-4 mb-8">
+                {[
+                  'Hasta 10 canchas',
+                  'Gestión avanzada de reservas',
+                  'Dashboard con analytics',
+                  'Configuración de horarios',
+                  'Soporte prioritario',
+                  'Comisión 5% por reserva',
+                  'Reportes detallados',
+                  'Integración con pagos'
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-yellow-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-white">{feature}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <Link 
+                to="/registrar"
+                className="w-full bg-white text-emerald-600 py-4 rounded-2xl font-bold hover:bg-gray-100 transition-all duration-300 text-center block"
+              >
+                Empezar Prueba Gratis
+              </Link>
+            </div>
+
+            {/* Plan Enterprise */}
+            <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:scale-105">
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
+                <p className="text-gray-600 mb-6">Para grandes complejos</p>
+                <div className="mb-6">
+                  <span className="text-5xl font-black text-gray-900">$149</span>
+                  <span className="text-gray-600 text-lg">/mes</span>
+                </div>
+                <p className="text-sm text-gray-500">Funcionalidades premium</p>
+              </div>
+              
+              <div className="space-y-4 mb-8">
+                {[
+                  'Canchas ilimitadas',
+                  'Gestión multi-sede',
+                  'Analytics avanzados',
+                  'API personalizada',
+                  'Soporte 24/7',
+                  'Comisión 3% por reserva',
+                  'White-label disponible',
+                  'Manager dedicado'
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-purple-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-gray-700">{feature}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <Link 
+                to="/registrar"
+                className="w-full bg-purple-600 text-white py-4 rounded-2xl font-bold hover:bg-purple-700 transition-all duration-300 text-center block"
+              >
+                Contactar Ventas
+              </Link>
+            </div>
+          </div>
+
+          {/* Additional Info */}
+          <div className="text-center mt-16">
+            <p className="text-gray-600 mb-6">
+              ¿Necesitas algo personalizado? <Link to="/contacto" className="text-emerald-600 font-semibold hover:underline">Contáctanos</Link>
+            </p>
+            <div className="flex flex-wrap justify-center items-center gap-8 text-gray-500">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Sin permanencia</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span>Pagos seguros</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                <span>Soporte incluido</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* For Players Section */}
       <div className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
