@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useConfiguracionHorariosAPI } from '../hooks';
 
 const ConfiguracionHorarios = ({ canchaId, onClose, onSave }) => {
   const { user } = useAuth();
+  const configuracionAPI = useConfiguracionHorariosAPI();
   const [configuracion, setConfiguracion] = useState({
     horaApertura: '09:00',
     horaCierre: '22:00',
@@ -42,24 +44,19 @@ const ConfiguracionHorarios = ({ canchaId, onClose, onSave }) => {
   const cargarConfiguracion = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/configuracion-horarios/cancha/${canchaId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const result = await configuracionAPI.getConfiguracion(canchaId);
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.existe) {
-          setConfiguracion({
-            horaApertura: data.horaApertura,
-            horaCierre: data.horaCierre,
-            duracionTurnoMinutos: data.duracionTurnoMinutos,
-            diasDisponibles: data.diasDisponibles,
-            anticipacionMinimaHoras: data.anticipacionMinimaHoras,
-            anticipacionMaximaDias: data.anticipacionMaximaDias
-          });
-        }
+      if (result.success && result.data.existe) {
+        setConfiguracion({
+          horaApertura: result.data.horaApertura,
+          horaCierre: result.data.horaCierre,
+          duracionTurnoMinutos: result.data.duracionTurnoMinutos,
+          diasDisponibles: result.data.diasDisponibles,
+          anticipacionMinimaHoras: result.data.anticipacionMinimaHoras,
+          anticipacionMaximaDias: result.data.anticipacionMaximaDias
+        });
+      } else if (!result.success) {
+        setError(result.error);
       }
     } catch (error) {
       console.error('Error al cargar configuración:', error);
@@ -92,25 +89,16 @@ const ConfiguracionHorarios = ({ canchaId, onClose, onSave }) => {
     setSuccess('');
 
     try {
-      const response = await fetch(`/api/configuracion-horarios/cancha/${canchaId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(configuracion)
-      });
+      const result = await configuracionAPI.saveConfiguracion(canchaId, configuracion);
 
-      if (response.ok) {
-        const data = await response.json();
+      if (result.success) {
         setSuccess('Configuración guardada exitosamente');
-        if (onSave) onSave(data);
+        if (onSave) onSave(result.data);
         setTimeout(() => {
           if (onClose) onClose();
         }, 2000);
       } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Error al guardar la configuración');
+        setError(result.error);
       }
     } catch (error) {
       console.error('Error al guardar configuración:', error);
@@ -125,20 +113,13 @@ const ConfiguracionHorarios = ({ canchaId, onClose, onSave }) => {
     setError('');
 
     try {
-      const response = await fetch(`/api/configuracion-horarios/cancha/${canchaId}/por-defecto`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const result = await configuracionAPI.createConfiguracionPorDefecto(canchaId);
 
-      if (response.ok) {
-        const data = await response.json();
+      if (result.success) {
         setSuccess('Configuración por defecto creada');
         cargarConfiguracion();
       } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Error al crear configuración por defecto');
+        setError(result.error);
       }
     } catch (error) {
       console.error('Error:', error);

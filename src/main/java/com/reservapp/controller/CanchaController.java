@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.reservapp.dto.CreateCanchaRequest;
+import com.reservapp.dto.UpdateCanchaRequest;
 import com.reservapp.entity.Cancha;
 import com.reservapp.service.CanchaService;
 
@@ -60,6 +62,11 @@ public class CanchaController {
         return ResponseEntity.ok(canchaService.getDeportesDisponibles());
     }
 
+    @GetMapping("/club/{clubId}")
+    public ResponseEntity<List<Cancha>> getCanchasByClub(@PathVariable Long clubId) {
+        return ResponseEntity.ok(canchaService.getCanchasByClub(clubId));
+    }
+
     // Endpoints de administración (deben ir antes que /{id})
     @PreAuthorize("hasAuthority('CLUB')")
     @GetMapping("/admin")
@@ -69,15 +76,19 @@ public class CanchaController {
 
     @PreAuthorize("hasAuthority('CLUB')")
     @PostMapping("/admin")
-    public ResponseEntity<Cancha> createCanchaAdmin(@Valid @RequestBody Cancha cancha) {
-        Cancha nuevaCancha = canchaService.createCancha(cancha);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevaCancha);
+    public ResponseEntity<Cancha> createCanchaAdmin(@Valid @RequestBody CreateCanchaRequest request) {
+        try {
+            Cancha nuevaCancha = canchaService.createCanchaFromDTO(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(nuevaCancha);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PreAuthorize("hasAuthority('CLUB')")
     @PutMapping("/admin/{id}")
-    public ResponseEntity<Cancha> updateCanchaAdmin(@PathVariable Long id, @Valid @RequestBody Cancha cancha) {
-        return canchaService.updateCancha(id, cancha)
+    public ResponseEntity<Cancha> updateCanchaAdmin(@PathVariable Long id, @Valid @RequestBody UpdateCanchaRequest request) {
+        return canchaService.updateCanchaFromDTO(id, request)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -127,4 +138,4 @@ public class CanchaController {
         }
         return ResponseEntity.notFound().build();
     }
-} 
+}

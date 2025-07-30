@@ -66,11 +66,11 @@ public class Cancha {
     @Column
     private Boolean disponible = true;
 
-    // Propietario de la cancha (debe ser un usuario de tipo CLUB)
+    // Club al que pertenece la cancha
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "propietario_id")
+    @JoinColumn(name = "club_id", nullable = false)
     @JsonIgnore
-    private Usuario propietario;
+    private Club club;
 
     // Configuración de horarios personalizada
     @OneToOne(mappedBy = "cancha", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -80,7 +80,7 @@ public class Cancha {
     // Constructors
     public Cancha() {}
 
-    public Cancha(Long id, String nombre, String descripcion, String deporte, String ubicacion, Double precioPorHora, String horario, List<String> imagenes, Boolean disponible, Usuario propietario) {
+    public Cancha(Long id, String nombre, String descripcion, String deporte, String ubicacion, Double precioPorHora, String horario, List<String> imagenes, Boolean disponible, Club club) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -90,7 +90,20 @@ public class Cancha {
         this.horario = horario;
         this.imagenes = imagenes;
         this.disponible = disponible;
-        this.propietario = propietario;
+        this.club = club;
+    }
+
+    // Constructor sin ID para crear nuevas canchas
+    public Cancha(String nombre, String descripcion, String deporte, String ubicacion, Double precioPorHora, String horario, List<String> imagenes, Club club) {
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+        this.deporte = deporte;
+        this.ubicacion = ubicacion;
+        this.precioPorHora = precioPorHora;
+        this.horario = horario;
+        this.imagenes = imagenes;
+        this.disponible = true; // Por defecto disponible
+        this.club = club;
     }
 
     // Getters and Setters
@@ -166,12 +179,12 @@ public class Cancha {
         this.disponible = disponible;
     }
 
-    public Usuario getPropietario() {
-        return propietario;
+    public Club getClub() {
+        return club;
     }
 
-    public void setPropietario(Usuario propietario) {
-        this.propietario = propietario;
+    public void setClub(Club club) {
+        this.club = club;
     }
 
     public ConfiguracionHorario getConfiguracionHorario() {

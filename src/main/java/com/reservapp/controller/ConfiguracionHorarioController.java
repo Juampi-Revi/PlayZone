@@ -94,7 +94,7 @@ public class ConfiguracionHorarioController {
             }
 
             Cancha cancha = canchaOpt.get();
-            if (cancha.getPropietario() == null || !cancha.getPropietario().getId().equals(usuario.getId())) {
+            if (cancha.getClub() == null || cancha.getClub().getPropietario() == null || !cancha.getClub().getPropietario().getId().equals(usuario.getId())) {
                 Map<String, Object> error = new HashMap<>();
                 error.put("error", "No tienes permisos para configurar esta cancha");
                 return ResponseEntity.status(403).body(error);
@@ -162,7 +162,7 @@ public class ConfiguracionHorarioController {
             }
 
             Cancha cancha = canchaOpt.get();
-            if (cancha.getPropietario() == null || !cancha.getPropietario().getId().equals(usuario.getId())) {
+            if (cancha.getClub() == null || cancha.getClub().getPropietario() == null || !cancha.getClub().getPropietario().getId().equals(usuario.getId())) {
                 Map<String, Object> error = new HashMap<>();
                 error.put("error", "No tienes permisos para configurar esta cancha");
                 return ResponseEntity.status(403).body(error);

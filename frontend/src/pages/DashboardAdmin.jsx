@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useClubAPI, useCanchasAPI, useReservasAPI } from '../hooks';
 import Sidebar from '../components/Sidebar';
 import GestionClub from './admin/GestionClub';
 import GestionReservas from './admin/GestionReservas';
@@ -28,6 +29,9 @@ import {
 
 const DashboardAdmin = () => {
   const { user } = useAuth();
+  const clubAPI = useClubAPI();
+  const canchasAPI = useCanchasAPI();
+  const reservasAPI = useReservasAPI();
   
   // Estados para el sidebar y navegación interna
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -568,8 +572,22 @@ const DashboardAdmin = () => {
   };
 
   useEffect(() => {
+    console.log('🚀 DashboardAdmin useEffect ejecutándose...');
     cargarEstadisticas();
     verificarOnboarding();
+    
+    // Escuchar evento de actualización de información del club
+    const handleClubInfoUpdated = () => {
+      console.log('🔄 Información del club actualizada, refrescando onboarding...');
+      verificarOnboarding();
+    };
+    
+    window.addEventListener('clubInfoUpdated', handleClubInfoUpdated);
+    
+    // Cleanup del event listener
+    return () => {
+      window.removeEventListener('clubInfoUpdated', handleClubInfoUpdated);
+    };
   }, []);
 
   const cargarEstadisticas = async () => {
@@ -589,34 +607,18 @@ const DashboardAdmin = () => {
   };
 
   const verificarOnboarding = async () => {
+    console.log('🔍 Iniciando verificarOnboarding...');
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setOnboardingData(prev => ({ ...prev, isLoading: false }));
-        return;
-      }
-
-      const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      };
-
       // 1. Verificar si tiene canchas
-      const canchasResponse = await fetch('http://localhost:8082/api/configuracion-horarios/mis-canchas', {
-        headers
-      });
+      console.log('🏟️ Verificando canchas...');
+      const canchasResult = await canchasAPI.getMisCanchas();
       
       let hasCanchas = false;
       let hasConfiguraciones = false;
       let canchasData = [];
 
-      console.log('🔍 Verificando onboarding...');
-      console.log('📡 Response status:', canchasResponse.status);
-
-      if (canchasResponse.ok) {
-        const canchasResult = await canchasResponse.json();
-        console.log('📊 Canchas result:', canchasResult);
-        canchasData = canchasResult.canchas || [];
+      if (canchasResult.success) {
+        canchasData = canchasResult.data.canchas || [];
         hasCanchas = canchasData.length > 0;
         console.log('🏟️ Tiene canchas:', hasCanchas, '- Total:', canchasData.length);
         
@@ -627,23 +629,38 @@ const DashboardAdmin = () => {
           cancha.configuracionHorario.horaCierre
         );
       } else {
-        console.log('❌ Error en API canchas:', canchasResponse.status);
+        console.log('❌ Error en API canchas:', canchasResult.error);
       }
 
       // 2. Verificar si tiene reservas
-      const reservasResponse = await fetch('http://localhost:8082/api/reservas', {
-        headers
-      });
-      
+      const reservasResult = await reservasAPI.getAllReservas();
       let hasReservas = false;
-      if (reservasResponse.ok) {
-        const reservasResult = await reservasResponse.json();
-        hasReservas = Array.isArray(reservasResult) && reservasResult.length > 0;
+      if (reservasResult.success) {
+        hasReservas = Array.isArray(reservasResult.data) && reservasResult.data.length > 0;
       }
 
       // 3. Verificar información básica del club
-      // Consideramos que tiene info del club si está logueado y tiene nombre
-      const hasClubInfo = !!user?.nombre && !!user?.email;
+      const clubResult = await clubAPI.getMiClub();
+      let hasClubInfo = false;
+      
+      if (clubResult.success) {
+        console.log('🏢 Respuesta completa del club:', clubResult);
+        
+        // Acceder al club desde la respuesta del DTO
+        const club = clubResult.data.club || clubResult.data;
+        console.log('🏢 Datos del club:', club);
+        
+        // Verificar que el club tenga información básica completa
+        hasClubInfo = !!(club && 
+                        club.nombre && 
+                        club.nombre.trim() !== '' &&
+                        club.direccion && 
+                        club.direccion.trim() !== '');
+        console.log('✅ Tiene info completa del club:', hasClubInfo);
+      } else {
+        console.log('❌ No se encontró club para el usuario o error en API');
+        hasClubInfo = false;
+      }
 
       // 4. Verificar si tiene precios configurados
       // Si tiene canchas con configuraciones, asumimos que tienen precios
@@ -677,7 +694,7 @@ const DashboardAdmin = () => {
       console.error('Error al verificar onboarding:', error);
       // En caso de error, mostrar onboarding por defecto para usuarios sin canchas
       setOnboardingData({
-        hasClubInfo: !!user?.nombre,
+        hasClubInfo: false, // Cambiado para ser más estricto
         hasCanchas: false,
         hasHorarios: false,
         hasPrecios: false,

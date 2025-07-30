@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { useAuthAPI } from '../hooks/useAuth';
 
 const AuthContext = createContext();
 
@@ -7,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(() => localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
+  const authAPI = useAuthAPI();
 
   // Configurar interceptor de axios para agregar token automáticamente
   useEffect(() => {
@@ -30,51 +32,44 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (token) {
-      axios.get('http://localhost:8082/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => {
-          if (res.data && res.data.success) {
-            setUser(res.data.user);
-          } else {
-            setUser(null);
-            setToken(null);
-            localStorage.removeItem('token');
-          }
-        })
-        .catch(() => {
+    const checkAuth = async () => {
+      if (token) {
+        const result = await authAPI.getMe();
+        if (result.success) {
+          setUser(result.data.user);
+        } else {
           setUser(null);
           setToken(null);
           localStorage.removeItem('token');
-        })
-        .finally(() => setLoading(false));
-    } else {
+        }
+      }
       setLoading(false);
-    }
+    };
+
+    checkAuth();
   }, [token]);
 
   const login = async (email, password) => {
-    const res = await axios.post('http://localhost:8082/api/auth/login', { email, password });
-    if (res.data && res.data.success) {
-      setToken(res.data.token);
-      localStorage.setItem('token', res.data.token);
-      setUser(res.data.user);
-      return { success: true, user: res.data.user };
+    const result = await authAPI.login(email, password);
+    if (result.success) {
+      setToken(result.data.token);
+      localStorage.setItem('token', result.data.token);
+      setUser(result.data.user);
+      return { success: true, user: result.data.user };
     } else {
-      return { success: false, message: res.data?.message || 'Error desconocido' };
+      return { success: false, message: result.error };
     }
   };
 
   const register = async (nombre, email, password, tipo) => {
-    const res = await axios.post('http://localhost:8082/api/auth/register', { nombre, email, password, tipo });
-    if (res.data && res.data.success) {
-      setToken(res.data.token);
-      localStorage.setItem('token', res.data.token);
-      setUser(res.data.user);
+    const result = await authAPI.register(nombre, email, password, tipo);
+    if (result.success) {
+      setToken(result.data.token);
+      localStorage.setItem('token', result.data.token);
+      setUser(result.data.user);
       return { success: true };
     } else {
-      return { success: false, message: res.data?.message || 'Error desconocido' };
+      return { success: false, message: result.error };
     }
   };
 

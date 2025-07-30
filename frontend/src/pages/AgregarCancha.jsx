@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const AgregarCancha = () => {
@@ -11,11 +11,30 @@ const AgregarCancha = () => {
     ubicacion: '',
     precioPorHora: '',
     horario: '',
-    imagenes: []
+    imagenes: [],
+    clubId: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [clubes, setClubes] = useState([]);
+
+  useEffect(() => {
+    cargarClubes();
+  }, []);
+
+  const cargarClubes = async () => {
+    try {
+      const response = await axios.get('http://localhost:8082/api/clubes', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      setClubes(response.data);
+    } catch (error) {
+      console.error('Error al cargar clubes:', error);
+    }
+  };
 
   const deportes = [
     'Fútbol', 'Tenis', 'Pádel', 'Basketball', 'Vóley', 'Squash', 
@@ -59,13 +78,21 @@ const AgregarCancha = () => {
         throw new Error('El precio por hora debe ser mayor a 0');
       }
 
+      if (!formData.clubId) {
+        throw new Error('Debe seleccionar un club');
+      }
+
       const canchaData = {
         ...formData,
         precioPorHora: parseFloat(formData.precioPorHora),
         disponible: true
       };
 
-      const response = await axios.post('http://localhost:8082/api/canchas', canchaData);
+      const response = await axios.post('http://localhost:8082/api/canchas/admin', canchaData, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       
       setSuccess('¡Cancha agregada exitosamente!');
       setTimeout(() => {
@@ -134,6 +161,26 @@ const AgregarCancha = () => {
                   <option value="">Selecciona un deporte</option>
                   {deportes.map(deporte => (
                     <option key={deporte} value={deporte}>{deporte}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Club */}
+              <div>
+                <label htmlFor="clubId" className="block text-sm font-medium text-gray-700 mb-2">
+                  Club *
+                </label>
+                <select
+                  id="clubId"
+                  name="clubId"
+                  value={formData.clubId}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Selecciona un club</option>
+                  {clubes.map(club => (
+                    <option key={club.id} value={club.id}>{club.nombre}</option>
                   ))}
                 </select>
               </div>

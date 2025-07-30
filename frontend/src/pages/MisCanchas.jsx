@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useCanchasAPI } from '../hooks';
 import ConfiguracionHorarios from '../components/ConfiguracionHorarios';
 
 const MisCanchas = () => {
   const { user } = useAuth();
+  const canchasAPI = useCanchasAPI();
   const [canchas, setCanchas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -18,15 +20,10 @@ const MisCanchas = () => {
   const cargarMisCanchas = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/configuracion-horarios/mis-canchas', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const result = await canchasAPI.getMisCanchas();
 
-      if (response.ok) {
-        const data = await response.json();
-        setCanchas(data.canchas);
+      if (result.success) {
+        setCanchas(result.data.canchas);
       } else {
         setError('Error al cargar las canchas');
       }
@@ -38,54 +35,11 @@ const MisCanchas = () => {
     }
   };
 
-  const verificarConfiguracion = async (canchaId) => {
-    try {
-      const response = await fetch(`/api/configuracion-horarios/cancha/${canchaId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return data.existe;
-      }
-      return false;
-    } catch (error) {
-      console.error('Error al verificar configuración:', error);
-      return false;
-    }
-  };
-
-  const obtenerHorariosDisponibles = async (canchaId, fecha) => {
-    try {
-      const response = await fetch(`/api/configuracion-horarios/cancha/${canchaId}/horarios-disponibles?fecha=${fecha}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return data.horarios;
-      }
-      return [];
-    } catch (error) {
-      console.error('Error al obtener horarios:', error);
-      return [];
-    }
-  };
-
   const toggleDisponibilidad = async (canchaId) => {
     try {
-      const response = await fetch(`/api/canchas/${canchaId}/toggle-disponibilidad`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const result = await canchasAPI.toggleDisponibilidad(canchaId);
 
-      if (response.ok) {
+      if (result.success) {
         cargarMisCanchas(); // Recargar la lista
       } else {
         setError('Error al cambiar disponibilidad');
