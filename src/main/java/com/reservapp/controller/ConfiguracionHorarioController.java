@@ -2,6 +2,7 @@ package com.reservapp.controller;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -212,7 +213,7 @@ public class ConfiguracionHorarioController {
     }
 
     /**
-     * Obtiene las canchas del propietario autenticado
+     * Obtiene las canchas del propietario autenticado con sus configuraciones de horarios
      */
     @GetMapping("/mis-canchas")
     @PreAuthorize("hasAuthority('CLUB')")
@@ -231,8 +232,115 @@ public class ConfiguracionHorarioController {
             
             List<Cancha> canchas = canchaService.getCanchasByPropietario(usuarioId);
             
+            // Crear lista de canchas con configuraciones incluidas
+            List<Map<String, Object>> canchasConConfiguracion = new ArrayList<>();
+            
+            for (Cancha cancha : canchas) {
+                Map<String, Object> canchaData = new HashMap<>();
+                canchaData.put("id", cancha.getId());
+                canchaData.put("nombre", cancha.getNombre());
+                canchaData.put("descripcion", cancha.getDescripcion());
+                canchaData.put("deporte", cancha.getDeporte());
+                // La ubicación de la cancha es la dirección del club
+                String ubicacion = null;
+                if (cancha.getClub() != null && cancha.getClub().getDireccion() != null && !cancha.getClub().getDireccion().trim().isEmpty()) {
+                    ubicacion = cancha.getClub().getDireccion();
+                } else if (cancha.getUbicacion() != null && !cancha.getUbicacion().trim().isEmpty()) {
+                    ubicacion = cancha.getUbicacion();
+                } else {
+                    // Ubicación por defecto si no hay datos
+                    ubicacion = "Ubicación no especificada";
+                }
+                
+                canchaData.put("ubicacion", ubicacion);
+                canchaData.put("precioPorHora", cancha.getPrecioPorHora());
+                canchaData.put("horario", cancha.getHorario());
+                canchaData.put("disponible", cancha.getDisponible());
+                
+                // Debug: Log información sobre imágenes
+                System.out.println("=== DEBUG IMAGENES ===");
+                System.out.println("Cancha: " + cancha.getNombre());
+                System.out.println("Deporte: " + cancha.getDeporte());
+                
+                // Mapear imágenes manualmente para evitar problemas de serialización
+                List<String> imagenesUrls = new ArrayList<>();
+                try {
+                    List<String> imagenesOriginales = cancha.getImagenes();
+                    System.out.println("Imágenes originales: " + (imagenesOriginales != null ? "not null" : "null"));
+                    System.out.println("Imágenes size: " + (imagenesOriginales != null ? imagenesOriginales.size() : "null"));
+                    
+                    if (imagenesOriginales != null && !imagenesOriginales.isEmpty()) {
+                        // Forzar la carga de la colección iterando sobre ella
+                        for (String imagen : imagenesOriginales) {
+                            if (imagen != null && !imagen.trim().isEmpty()) {
+                                imagenesUrls.add(imagen);
+                                System.out.println("Imagen agregada: " + imagen);
+                            }
+                        }
+                    }
+                    System.out.println("Imágenes copiadas: " + imagenesUrls.size());
+                } catch (Exception e) {
+                    System.out.println("Error al acceder a imágenes: " + e.getMessage());
+                    e.printStackTrace();
+                }
+                
+                // Si es una cancha de fútbol y no tiene imágenes, agregar imagen por defecto
+                if ((imagenesUrls == null || imagenesUrls.isEmpty()) && 
+                    cancha.getDeporte() != null && 
+                    cancha.getDeporte().toLowerCase().contains("futbol")) {
+                    System.out.println("Aplicando imagen por defecto para cancha de fútbol");
+                    imagenesUrls = new ArrayList<>();
+                    imagenesUrls.add("https://grupohec.com/wp-content/uploads/2023/01/Grama-sintetica-altura.webp");
+                } else {
+                    System.out.println("No se aplica imagen por defecto. Condiciones:");
+                    System.out.println("- Imágenes vacías: " + (imagenesUrls == null || imagenesUrls.isEmpty()));
+                    System.out.println("- Es fútbol: " + (cancha.getDeporte() != null && cancha.getDeporte().toLowerCase().contains("futbol")));
+                }
+                
+                System.out.println("Imágenes finales: " + imagenesUrls);
+                System.out.println("======================");
+                
+                canchaData.put("imagenes", imagenesUrls);
+                
+                // Mapear club manualmente para evitar problemas de serialización
+                if (cancha.getClub() != null) {
+                    Map<String, Object> clubData = new HashMap<>();
+                    clubData.put("id", cancha.getClub().getId());
+                    clubData.put("nombre", cancha.getClub().getNombre());
+                    clubData.put("direccion", cancha.getClub().getDireccion());
+                    clubData.put("telefono", cancha.getClub().getTelefono());
+                    clubData.put("email", cancha.getClub().getEmail());
+                    clubData.put("descripcion", cancha.getClub().getDescripcion());
+                    
+                    // Mapear servicios manualmente
+                    List<String> servicios = cancha.getClub().getServicios();
+                    clubData.put("servicios", servicios != null ? servicios : new ArrayList<>());
+                    
+                    canchaData.put("club", clubData);
+                }
+                
+                // Obtener configuración de horarios para esta cancha
+                Optional<ConfiguracionHorario> config = configuracionHorarioService.getConfiguracionPorCancha(cancha.getId());
+                if (config.isPresent()) {
+                    ConfiguracionHorario configuracion = config.get();
+                    Map<String, Object> configData = new HashMap<>();
+                    configData.put("id", configuracion.getId());
+                    configData.put("horaApertura", configuracion.getHoraApertura().toString());
+                    configData.put("horaCierre", configuracion.getHoraCierre().toString());
+                    configData.put("duracionTurnoMinutos", configuracion.getDuracionTurnoMinutos());
+                    configData.put("diasDisponibles", configuracion.getDiasDisponibles());
+                    configData.put("anticipacionMinimaHoras", configuracion.getAnticipacionMinimaHoras());
+                    configData.put("anticipacionMaximaDias", configuracion.getAnticipacionMaximaDias());
+                    canchaData.put("configuracionHorario", configData);
+                } else {
+                    canchaData.put("configuracionHorario", null);
+                }
+                
+                canchasConConfiguracion.add(canchaData);
+            }
+            
             Map<String, Object> response = new HashMap<>();
-            response.put("canchas", canchas);
+            response.put("canchas", canchasConConfiguracion);
             response.put("total", canchas.size());
             response.put("usuarioId", usuarioId); // Para debug
             

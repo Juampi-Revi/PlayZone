@@ -7,6 +7,8 @@ import GestionReservas from './admin/GestionReservas';
 import FinanzasReportes from './admin/FinanzasReportes';
 import MisCanchas from './MisCanchas';
 import ConfiguracionHorarios from '../components/ConfiguracionHorarios';
+import CalendarioMaestro from '../components/CalendarioMaestro';
+import ConfiguracionPagos from '../components/ConfiguracionPagos';
 import {
   ChartBarIcon,
   BuildingOfficeIcon,
@@ -56,6 +58,7 @@ const DashboardAdmin = () => {
   });
 
   const [showOnboardingManual, setShowOnboardingManual] = useState(false);
+  const [showConfiguracionPagos, setShowConfiguracionPagos] = useState(false);
 
   const toggleSidebar = () => {
     setSidebarExpanded(!sidebarExpanded);
@@ -67,12 +70,24 @@ const DashboardAdmin = () => {
     { id: 'canchas', label: 'Mis Canchas' },
     { id: 'horarios', label: 'Horarios' },
     { id: 'reservas', label: 'Reservas' },
-    { id: 'finanzas', label: 'Finanzas' },
-    { id: 'reportes', label: 'Reportes' }
+    { id: 'finanzas', label: 'Finanzas y Reportes' }
   ];
 
   // Función para renderizar el contenido según la sección activa
   const renderContent = () => {
+    // Si estamos mostrando la configuración de pagos, renderizar ese componente
+    if (showConfiguracionPagos) {
+      return (
+        <ConfiguracionPagos 
+          onComplete={() => {
+            setShowConfiguracionPagos(false);
+            setOnboardingData(prev => ({ ...prev, hasPagos: true }));
+            setActiveSection('finanzas');
+          }}
+        />
+      );
+    }
+
     switch (activeSection) {
       case 'club':
         return <GestionClub />;
@@ -81,7 +96,6 @@ const DashboardAdmin = () => {
       case 'reservas':
         return <GestionReservas />;
       case 'finanzas':
-      case 'reportes':
         return <FinanzasReportes />;
       case 'horarios':
         return (
@@ -89,17 +103,13 @@ const DashboardAdmin = () => {
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h1 className="text-2xl font-bold text-gray-800 flex items-center mb-4">
                 <ClockIcon className="h-6 w-6 mr-2 text-blue-600" />
-                Configuración de Horarios
+                Calendario Maestro de Horarios
               </h1>
               <p className="text-gray-600 mb-6">
-                Configura los horarios de disponibilidad para cada una de tus canchas
+                Vista consolidada de todas tus canchas organizadas por deporte. Gestiona horarios de forma centralizada y eficiente.
               </p>
-              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                <p className="text-blue-800">
-                  💡 Para configurar horarios, ve a la sección "Mis Canchas" y selecciona "Configurar Horarios" en la cancha que desees.
-                </p>
-              </div>
             </div>
+            <CalendarioMaestro />
           </div>
         );
       default: // 'resumen'
@@ -110,22 +120,22 @@ const DashboardAdmin = () => {
   // Función para obtener clases de Tailwind según el color
   const getStepClasses = (color) => {
     const colorClasses = {
+      emerald: 'border-emerald-200 bg-emerald-50 hover:border-emerald-400 cursor-pointer hover:scale-105',
       blue: 'border-blue-200 bg-blue-50 hover:border-blue-400 cursor-pointer hover:scale-105',
-      green: 'border-green-200 bg-green-50 hover:border-green-400 cursor-pointer hover:scale-105',
-      purple: 'border-purple-200 bg-purple-50 hover:border-purple-400 cursor-pointer hover:scale-105',
-      yellow: 'border-yellow-200 bg-yellow-50 hover:border-yellow-400 cursor-pointer hover:scale-105',
-      indigo: 'border-indigo-200 bg-indigo-50 hover:border-indigo-400 cursor-pointer hover:scale-105'
+      amber: 'border-amber-200 bg-amber-50 hover:border-amber-400 cursor-pointer hover:scale-105',
+      rose: 'border-rose-200 bg-rose-50 hover:border-rose-400 cursor-pointer hover:scale-105',
+      teal: 'border-teal-200 bg-teal-50 hover:border-teal-400 cursor-pointer hover:scale-105'
     };
     return colorClasses[color] || 'border-gray-200 bg-gray-50 hover:border-gray-400 cursor-pointer hover:scale-105';
   };
 
   const getButtonClasses = (color) => {
     const buttonClasses = {
+      emerald: 'w-full bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition-colors font-medium',
       blue: 'w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium',
-      green: 'w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors font-medium',
-      purple: 'w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors font-medium',
-      yellow: 'w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-medium',
-      indigo: 'w-full bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 transition-colors font-medium'
+      amber: 'w-full bg-amber-500 text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors font-medium',
+      rose: 'w-full bg-rose-500 text-white py-2 px-4 rounded-lg hover:bg-rose-600 transition-colors font-medium',
+      teal: 'w-full bg-teal-500 text-white py-2 px-4 rounded-lg hover:bg-teal-600 transition-colors font-medium'
     };
     return buttonClasses[color] || 'w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors font-medium';
   };
@@ -141,7 +151,7 @@ const DashboardAdmin = () => {
       icon: BuildingOfficeIcon,
       completed: onboardingData.hasClubInfo,
       action: () => setActiveSection('club'),
-      color: 'blue'
+      color: 'emerald'
     },
     {
       id: 'canchas',
@@ -150,7 +160,7 @@ const DashboardAdmin = () => {
       icon: BuildingStorefrontIcon,
       completed: onboardingData.hasCanchas,
       action: () => setActiveSection('canchas'),
-      color: 'green',
+      color: 'blue',
       disabled: !onboardingData.hasClubInfo
     },
     {
@@ -160,7 +170,7 @@ const DashboardAdmin = () => {
       icon: ClockIcon,
       completed: onboardingData.hasHorarios,
       action: () => setActiveSection('horarios'),
-      color: 'purple',
+      color: 'amber',
       disabled: !onboardingData.hasCanchas
     },
     {
@@ -170,17 +180,17 @@ const DashboardAdmin = () => {
       icon: CurrencyDollarIcon,
       completed: onboardingData.hasPrecios,
       action: () => setActiveSection('finanzas'),
-      color: 'yellow',
+      color: 'rose',
       disabled: !onboardingData.hasHorarios
     },
     {
       id: 'pagos',
       title: 'Medios de Pago',
-      description: 'Configura Stripe para recibir pagos online de forma segura',
+      description: 'Configura métodos de pago y precios diferenciados por horario',
       icon: CreditCardIcon,
       completed: onboardingData.hasPagos,
-      action: () => setActiveSection('finanzas'),
-      color: 'indigo',
+      action: () => setShowConfiguracionPagos(true),
+      color: 'teal',
       disabled: !onboardingData.hasPrecios
     }
   ];
@@ -360,23 +370,36 @@ const DashboardAdmin = () => {
           // Vista normal del dashboard para usuarios configurados
           <>
             {/* Header de Bienvenida */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-700 text-white p-8 rounded-lg shadow-lg">
+            <div className="bg-gradient-to-r from-emerald-500 via-teal-600 to-cyan-700 text-white p-8 rounded-lg shadow-lg">
               <div className="flex justify-between items-start">
                 <div>
                   <h1 className="text-3xl font-bold mb-2 flex items-center">
                     <ChartBarIcon className="h-8 w-8 mr-3" />
                     Panel de Administración
                   </h1>
-                  <p className="text-blue-100">
+                  <p className="text-emerald-100">
                     Gestiona tu club y canchas desde aquí, {user?.nombre}
                   </p>
                 </div>
                 <button
-                  onClick={() => setShowOnboardingManual(true)}
+                  onClick={() => {
+                    if (completedSteps === 0) {
+                      // Si no ha comenzado, ir directamente al primer paso
+                      setActiveSection('club');
+                    } else {
+                      // Si ya comenzó o completó, mostrar el onboarding manual
+                      setShowOnboardingManual(true);
+                    }
+                  }}
                   className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors flex items-center"
                 >
                   <RocketLaunchIcon className="h-5 w-5 mr-2" />
-                  Configuración Inicial
+                  {completedSteps === onboardingSteps.length 
+                    ? "Ver Configuración Inicial" 
+                    : completedSteps > 0 
+                      ? "Finalizar Configuración Inicial"
+                      : "Comenzar Configuración Inicial"
+                  }
                 </button>
               </div>
             </div>
@@ -386,48 +409,48 @@ const DashboardAdmin = () => {
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-3xl font-bold text-blue-600 mb-2">
+                    <div className="text-3xl font-bold text-emerald-600 mb-2">
                       {stats.totalCanchas}
                     </div>
                     <div className="text-gray-600">Total Canchas</div>
                   </div>
-                  <BuildingStorefrontIcon className="h-12 w-12 text-blue-500" />
+                  <BuildingStorefrontIcon className="h-12 w-12 text-emerald-500" />
                 </div>
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-3xl font-bold text-green-600 mb-2">
+                    <div className="text-3xl font-bold text-teal-600 mb-2">
                       {stats.canchasActivas}
                     </div>
                     <div className="text-gray-600">Canchas Activas</div>
                   </div>
-                  <CheckCircleIcon className="h-12 w-12 text-green-500" />
+                  <CheckCircleIcon className="h-12 w-12 text-teal-500" />
                 </div>
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-3xl font-bold text-orange-600 mb-2">
+                    <div className="text-3xl font-bold text-amber-600 mb-2">
                       {stats.reservasHoy}
                     </div>
                     <div className="text-gray-600">Reservas Hoy</div>
                   </div>
-                  <CalendarDaysIcon className="h-12 w-12 text-orange-500" />
+                  <CalendarDaysIcon className="h-12 w-12 text-amber-500" />
                 </div>
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-3xl font-bold text-purple-600 mb-2">
+                    <div className="text-3xl font-bold text-rose-600 mb-2">
                       ${stats.ingresosMes.toLocaleString()}
                     </div>
                     <div className="text-gray-600">Ingresos del Mes</div>
                   </div>
-                  <CurrencyDollarIcon className="h-12 w-12 text-purple-500" />
+                  <CurrencyDollarIcon className="h-12 w-12 text-rose-500" />
                 </div>
               </div>
             </div>
@@ -448,44 +471,6 @@ const DashboardAdmin = () => {
                 </div>
               </div>
             )}
-
-            {/* Acciones Rápidas */}
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <BoltIcon className="h-6 w-6 mr-2 text-gray-600" />
-                Acciones Rápidas
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <button 
-                  onClick={() => setActiveSection('canchas')}
-                  className="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center"
-                >
-                  <BuildingStorefrontIcon className="h-6 w-6 mr-2" />
-                  <span className="font-medium">Agregar Cancha</span>
-                </button>
-                <button 
-                  onClick={() => setActiveSection('horarios')}
-                  className="bg-green-500 text-white p-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center"
-                >
-                  <ClockIcon className="h-6 w-6 mr-2" />
-                  <span className="font-medium">Config. Horarios</span>
-                </button>
-                <button 
-                  onClick={() => setActiveSection('reportes')}
-                  className="bg-purple-500 text-white p-4 rounded-lg hover:bg-purple-600 transition-colors flex items-center justify-center"
-                >
-                  <ChartPieIcon className="h-6 w-6 mr-2" />
-                  <span className="font-medium">Ver Reportes</span>
-                </button>
-                <button 
-                  onClick={() => setActiveSection('finanzas')}
-                  className="bg-orange-500 text-white p-4 rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center"
-                >
-                  <CreditCardIcon className="h-6 w-6 mr-2" />
-                  <span className="font-medium">Gestionar Pagos</span>
-                </button>
-              </div>
-            </div>
 
             {/* Gráfico de Reservas (Placeholder) */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -514,19 +499,19 @@ const DashboardAdmin = () => {
                     </div>
                     <TrophyIcon className="h-8 w-8 text-emerald-600" />
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
                     <div>
                       <p className="font-medium">Cancha Norte</p>
                       <p className="text-sm text-gray-600">72% ocupación</p>
                     </div>
-                    <TrophyIcon className="h-8 w-8 text-blue-600" />
+                    <TrophyIcon className="h-8 w-8 text-amber-600" />
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                     <div>
                       <p className="font-medium">Cancha Sur</p>
                       <p className="text-sm text-gray-600">68% ocupación</p>
                     </div>
-                    <TrophyIcon className="h-8 w-8 text-orange-600" />
+                    <TrophyIcon className="h-8 w-8 text-slate-600" />
                   </div>
                 </div>
               </div>
@@ -539,31 +524,31 @@ const DashboardAdmin = () => {
                 Actividad Reciente
               </h3>
               <div className="space-y-3">
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <CurrencyDollarIcon className="h-6 w-6 text-green-500" />
-                  <div>
-                    <p className="font-medium">Pago recibido</p>
-                    <p className="text-sm text-gray-600">$2,500 - Reserva Cancha Central</p>
+                  <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <CurrencyDollarIcon className="h-6 w-6 text-emerald-500" />
+                    <div>
+                      <p className="font-medium">Pago recibido</p>
+                      <p className="text-sm text-gray-600">$2,500 - Reserva Cancha Central</p>
+                    </div>
+                    <div className="ml-auto text-xs text-gray-500">Hace 1 hora</div>
                   </div>
-                  <div className="ml-auto text-xs text-gray-500">Hace 1 hora</div>
-                </div>
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <CalendarDaysIcon className="h-6 w-6 text-blue-500" />
-                  <div>
-                    <p className="font-medium">Nueva reserva</p>
-                    <p className="text-sm text-gray-600">Cancha Norte - Mañana 18:00</p>
+                  <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <CalendarDaysIcon className="h-6 w-6 text-blue-500" />
+                    <div>
+                      <p className="font-medium">Nueva reserva</p>
+                      <p className="text-sm text-gray-600">Cancha Norte - Mañana 18:00</p>
+                    </div>
+                    <div className="ml-auto text-xs text-gray-500">Hace 2 horas</div>
                   </div>
-                  <div className="ml-auto text-xs text-gray-500">Hace 2 horas</div>
-                </div>
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <CogIcon className="h-6 w-6 text-purple-500" />
-                  <div>
-                    <p className="font-medium">Horarios actualizados</p>
-                    <p className="text-sm text-gray-600">Cancha Sur - Nuevos turnos disponibles</p>
+                  <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <CogIcon className="h-6 w-6 text-orange-500" />
+                    <div>
+                      <p className="font-medium">Horarios actualizados</p>
+                      <p className="text-sm text-gray-600">Cancha Sur - Nuevos turnos disponibles</p>
+                    </div>
+                    <div className="ml-auto text-xs text-gray-500">Hace 1 día</div>
                   </div>
-                  <div className="ml-auto text-xs text-gray-500">Hace 1 día</div>
                 </div>
-              </div>
             </div>
           </>
         )}
@@ -623,11 +608,21 @@ const DashboardAdmin = () => {
         console.log('🏟️ Tiene canchas:', hasCanchas, '- Total:', canchasData.length);
         
         // Verificar si las canchas tienen configuraciones de horarios
+        console.log('🔧 Verificando configuraciones de horarios...');
+        canchasData.forEach((cancha, index) => {
+          console.log(`🏟️ Cancha ${index + 1} (${cancha.nombre}):`, {
+            tieneConfiguracion: !!cancha.configuracionHorario,
+            configuracion: cancha.configuracionHorario
+          });
+        });
+        
         hasConfiguraciones = canchasData.some(cancha => 
           cancha.configuracionHorario && 
           cancha.configuracionHorario.horaApertura && 
           cancha.configuracionHorario.horaCierre
         );
+        
+        console.log('✅ Tiene configuraciones de horarios:', hasConfiguraciones);
       } else {
         console.log('❌ Error en API canchas:', canchasResult.error);
       }

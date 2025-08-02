@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-const CardCancha = ({ cancha, user }) => {
+const CardCancha = ({ cancha, user, configuracionHorarios }) => {
   const { id, nombre, descripcion, deporte, ubicacion, precioPorHora, horario, imagenes, disponible } = cancha;
   
   // Imagen por defecto si no hay imágenes
@@ -25,6 +25,34 @@ const CardCancha = ({ cancha, user }) => {
       'Otro': '🏟️'
     };
     return iconos[deporte] || '🏟️';
+  };
+
+  // Función para formatear el horario basado en la configuración
+  const formatearHorario = () => {
+    if (!configuracionHorarios) {
+      return horario; // Fallback al horario de texto libre si no hay configuración
+    }
+
+    const { horaApertura, horaCierre, diasDisponibles } = configuracionHorarios;
+    
+    // Convertir días disponibles de string a array
+    const diasArray = diasDisponibles.split(',').map(d => parseInt(d.trim()));
+    
+    // Mapear números a nombres de días
+    const nombresDias = {
+      1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 
+      5: 'Vie', 6: 'Sáb', 7: 'Dom'
+    };
+    
+    // Verificar si son todos los días
+    const todosDias = diasArray.length === 7 && diasArray.sort().join(',') === '1,2,3,4,5,6,7';
+    
+    if (todosDias) {
+      return `Todos los días: ${horaApertura.substring(0, 5)} - ${horaCierre.substring(0, 5)}`;
+    } else {
+      const diasTexto = diasArray.map(d => nombresDias[d]).join(', ');
+      return `${diasTexto}: ${horaApertura.substring(0, 5)} - ${horaCierre.substring(0, 5)}`;
+    }
   };
 
   return (
@@ -90,7 +118,7 @@ const CardCancha = ({ cancha, user }) => {
             </div>
           </div>
 
-          {horario && (
+          {(configuracionHorarios || horario) && (
             <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
               <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,7 +127,7 @@ const CardCancha = ({ cancha, user }) => {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-xs text-gray-500 uppercase tracking-wide">Horario</div>
-                <div className="text-sm font-medium text-gray-800 truncate">{horario}</div>
+                <div className="text-sm font-medium text-gray-800 truncate">{formatearHorario()}</div>
               </div>
             </div>
           )}
@@ -141,4 +169,4 @@ const CardCancha = ({ cancha, user }) => {
   );
 };
 
-export default CardCancha; 
+export default CardCancha;

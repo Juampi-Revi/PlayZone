@@ -13,6 +13,9 @@ const GestionClub = () => {
     email: '',
     sitioWeb: '',
     horarioAtencion: '',
+    horaApertura: '08:00',
+    horaCierre: '22:00',
+    diasAbierto: [0, 1, 2, 3, 4, 5, 6], // Lunes a Domingo por defecto
     servicios: [],
     politicasCancelacion: '',
     reglasGenerales: ''
@@ -37,6 +40,78 @@ const GestionClub = () => {
     'Aire acondicionado'
   ];
 
+  // Funciones auxiliares para el manejo de horarios
+  const generarOpcionesHora = () => {
+    const opciones = [];
+    for (let hora = 6; hora <= 23; hora++) {
+      for (let minuto = 0; minuto < 60; minuto += 30) {
+        const horaStr = hora.toString().padStart(2, '0');
+        const minutoStr = minuto.toString().padStart(2, '0');
+        opciones.push(`${horaStr}:${minutoStr}`);
+      }
+    }
+    return opciones;
+  };
+
+  const formatearHorario = (data) => {
+    if (!data.horaApertura || !data.horaCierre || !data.diasAbierto) {
+      return 'No especificado';
+    }
+
+    const diasNombres = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    const diasSeleccionados = data.diasAbierto.map(index => diasNombres[index]);
+    
+    if (diasSeleccionados.length === 7) {
+      return `Todos los días: ${data.horaApertura} - ${data.horaCierre}`;
+    } else if (diasSeleccionados.length === 0) {
+      return 'Cerrado';
+    } else {
+      return `${diasSeleccionados.join(', ')}: ${data.horaApertura} - ${data.horaCierre}`;
+    }
+  };
+
+  const parseHorarioExistente = (horarioTexto) => {
+    // Intentar parsear el horario existente en texto libre
+    if (!horarioTexto) return { horaApertura: '08:00', horaCierre: '22:00', diasAbierto: [0, 1, 2, 3, 4, 5, 6] };
+    
+    // Buscar patrones de hora (ej: "8:00", "08:00", "8.00")
+    const horaRegex = /(\d{1,2})[:.]\d{2}/g;
+    const horas = horarioTexto.match(horaRegex);
+    
+    if (horas && horas.length >= 2) {
+      return {
+        horaApertura: horas[0].replace('.', ':').padStart(5, '0'),
+        horaCierre: horas[1].replace('.', ':').padStart(5, '0'),
+        diasAbierto: [0, 1, 2, 3, 4, 5, 6] // Por defecto todos los días
+      };
+    }
+    
+    return { horaApertura: '08:00', horaCierre: '22:00', diasAbierto: [0, 1, 2, 3, 4, 5, 6] };
+  };
+
+  const handleHorarioChange = (e) => {
+    const { name, value } = e.target;
+    setClubData(prev => {
+      const newData = { ...prev, [name]: value };
+      // Actualizar el horarioAtencion con el formato legible
+      newData.horarioAtencion = formatearHorario(newData);
+      return newData;
+    });
+  };
+
+  const handleDiaToggle = (diaIndex) => {
+    setClubData(prev => {
+      const newDiasAbierto = prev.diasAbierto.includes(diaIndex)
+        ? prev.diasAbierto.filter(d => d !== diaIndex)
+        : [...prev.diasAbierto, diaIndex].sort();
+      
+      const newData = { ...prev, diasAbierto: newDiasAbierto };
+      // Actualizar el horarioAtencion con el formato legible
+      newData.horarioAtencion = formatearHorario(newData);
+      return newData;
+    });
+  };
+
   useEffect(() => {
     cargarDatosClub();
   }, [user]);
@@ -51,6 +126,8 @@ const GestionClub = () => {
 
       if (result.success) {
         const club = result.data.club || result.data;
+        const horarioParsed = parseHorarioExistente(club.horarioAtencion);
+        
         setClubData({
           nombre: club.nombre || '',
           descripcion: club.descripcion || '',
@@ -59,6 +136,9 @@ const GestionClub = () => {
           email: club.email || '',
           sitioWeb: club.sitioWeb || '',
           horarioAtencion: club.horarioAtencion || '',
+          horaApertura: horarioParsed.horaApertura,
+          horaCierre: horarioParsed.horaCierre,
+          diasAbierto: horarioParsed.diasAbierto,
           servicios: Array.isArray(club.servicios) ? club.servicios : (club.servicios ? club.servicios.split(',').filter(s => s.trim()) : []),
           politicasCancelacion: club.politicasCancelacion || '',
           reglasGenerales: club.reglasGenerales || ''
@@ -356,15 +436,61 @@ const GestionClub = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Horario de Atención
               </label>
-              <input
-                type="text"
-                name="horarioAtencion"
-                value={clubData.horarioAtencion}
-                onChange={handleInputChange}
-                disabled={!isEditing && hasClub}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50"
-                placeholder="Ej: Lunes a Viernes: 8:00 - 22:00"
-              />
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Hora de Apertura
+                    </label>
+                    <select
+                      name="horaApertura"
+                      value={clubData.horaApertura || '08:00'}
+                      onChange={handleHorarioChange}
+                      disabled={!isEditing && hasClub}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50"
+                    >
+                      {generarOpcionesHora().map(hora => (
+                        <option key={hora} value={hora}>{hora}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Hora de Cierre
+                    </label>
+                    <select
+                      name="horaCierre"
+                      value={clubData.horaCierre || '22:00'}
+                      onChange={handleHorarioChange}
+                      disabled={!isEditing && hasClub}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50"
+                    >
+                      {generarOpcionesHora().map(hora => (
+                        <option key={hora} value={hora}>{hora}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-7 gap-1">
+                  {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((dia, index) => (
+                    <label key={dia} className="flex flex-col items-center">
+                      <span className="text-xs text-gray-600 mb-1">{dia}</span>
+                      <input
+                        type="checkbox"
+                        checked={clubData.diasAbierto ? clubData.diasAbierto.includes(index) : true}
+                        onChange={() => handleDiaToggle(index)}
+                        disabled={!isEditing && hasClub}
+                        className="rounded text-blue-600 focus:ring-blue-500"
+                      />
+                    </label>
+                  ))}
+                </div>
+                {clubData.horaApertura && clubData.horaCierre && (
+                  <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                    <strong>Horario:</strong> {formatearHorario(clubData)}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
