@@ -18,7 +18,6 @@ import com.reservapp.entity.Usuario;
 
 @RestController
 @RequestMapping("/api/calendario-maestro")
-@CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:5173", "http://localhost:5173"})
 public class CalendarioMaestroController {
     
     @Autowired

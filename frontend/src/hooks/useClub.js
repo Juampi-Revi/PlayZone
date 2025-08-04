@@ -1,5 +1,6 @@
-import { useState } from 'react';
 import axios from 'axios';
+import { useState } from 'react';
+
 
 export const useClubAPI = () => {
   const [loading, setLoading] = useState(false);
@@ -9,7 +10,7 @@ export const useClubAPI = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('/api/clubes/mi-club');
+      const response = await axios.get(`/api/clubes/mi-club`);
       setLoading(false);
       return { success: true, data: response.data };
     } catch (err) {
@@ -23,7 +24,7 @@ export const useClubAPI = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('/api/clubes', clubData);
+      const response = await axios.post(`/api/clubes`, clubData);
       setLoading(false);
       return { success: true, data: response.data };
     } catch (err) {
@@ -51,7 +52,7 @@ export const useClubAPI = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('/api/clubes');
+      const response = await axios.get(`/api/clubes`);
       setLoading(false);
       return { success: true, data: response.data };
     } catch (err) {

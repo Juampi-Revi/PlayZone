@@ -1,39 +1,37 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useClubAPI, useCanchasAPI, useReservasAPI } from '../hooks';
-import Sidebar from '../components/Sidebar';
-import GestionClub from './admin/GestionClub';
-import GestionReservas from './admin/GestionReservas';
-import FinanzasReportes from './admin/FinanzasReportes';
-import MisCanchas from './MisCanchas';
-import ConfiguracionHorarios from '../components/ConfiguracionHorarios';
+import {
+    BuildingOfficeIcon,
+    BuildingStorefrontIcon,
+    CalendarDaysIcon,
+    ChartBarIcon,
+    ChartPieIcon,
+    CheckCircleIcon,
+    ClockIcon,
+    CogIcon,
+    CreditCardIcon,
+    CurrencyDollarIcon,
+    DocumentTextIcon,
+    ExclamationTriangleIcon,
+    LightBulbIcon,
+    PhotoIcon,
+    RocketLaunchIcon,
+    TrophyIcon
+} from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react';
 import CalendarioMaestro from '../components/CalendarioMaestro';
 import ConfiguracionPagos from '../components/ConfiguracionPagos';
-import {
-  ChartBarIcon,
-  BuildingOfficeIcon,
-  BuildingStorefrontIcon,
-  ClockIcon,
-  CalendarDaysIcon,
-  CurrencyDollarIcon,
-  ChartPieIcon,
-  CreditCardIcon,
-  RocketLaunchIcon,
-  LightBulbIcon,
-  DocumentTextIcon,
-  PhotoIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-  BoltIcon,
-  CogIcon,
-  TrophyIcon
-} from '@heroicons/react/24/outline';
+import Sidebar from '../components/Sidebar';
+import { useAuth } from '../context/AuthContext';
+import { useClubAPI, useCanchasAPI, useReservasAdmin } from '../hooks';
+import FinanzasReportes from './admin/FinanzasReportes';
+import GestionClub from './admin/GestionClub';
+import GestionReservas from './admin/GestionReservas';
+import MisCanchas from './MisCanchas';
 
 const DashboardAdmin = () => {
   const { user } = useAuth();
   const clubAPI = useClubAPI();
   const canchasAPI = useCanchasAPI();
-  const reservasAPI = useReservasAPI();
+  const reservasAPI = useReservasAdmin();
   
   // Estados para el sidebar y navegación interna
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -628,7 +626,7 @@ const DashboardAdmin = () => {
       }
 
       // 2. Verificar si tiene reservas
-      const reservasResult = await reservasAPI.getAllReservas();
+      const reservasResult = await reservasAPI.getReservasAdmin();
       let hasReservas = false;
       if (reservasResult.success) {
         hasReservas = Array.isArray(reservasResult.data) && reservasResult.data.length > 0;

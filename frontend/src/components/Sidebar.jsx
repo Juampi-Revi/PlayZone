@@ -1,7 +1,10 @@
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const Sidebar = ({ menuItems, activeSection, onSectionChange, isExpanded, onToggle }) => {
+const Sidebar = ({ menuItems, activeSection, onSectionChange, isExpanded, onToggle, title, isPlayerDashboard }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Icon components
   const icons = {
@@ -53,12 +56,12 @@ const Sidebar = ({ menuItems, activeSection, onSectionChange, isExpanded, onTogg
     ),
     favorites: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
       </svg>
     ),
     matches: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
       </svg>
     ),
     payments: (
@@ -83,10 +86,113 @@ const Sidebar = ({ menuItems, activeSection, onSectionChange, isExpanded, onTogg
     )
   };
 
-  const getIcon = (id) => {
-    return icons[id] || icons.overview;
+  const getIcon = (iconName) => {
+    // Si es un emoji, lo renderizamos como texto
+    if (iconName && iconName.length <= 2 && /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u.test(iconName)) {
+      return <span className="text-xl">{iconName}</span>;
+    }
+    
+    // Si es un ID de icono, usamos el sistema de iconos
+    return icons[iconName] || icons.overview;
   };
 
+  // Determinar si es el panel de jugador basándose en las props o la ruta
+  const isPlayer = isPlayerDashboard || (title && title.includes('Jugador')) || location.pathname.includes('/jugador');
+
+  // Para el panel de jugador, usar navegación simple
+  if (isPlayer) {
+    return (
+      <div className={`min-h-screen bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out relative ${
+        isExpanded ? 'w-64' : 'w-16'
+      }`}>
+        {/* Toggle Button */}
+        <div className="absolute -right-3 top-6 z-10">
+          <button
+            onClick={onToggle}
+            className="w-6 h-6 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-200 hover:bg-gray-50"
+          >
+            <svg 
+              className={`w-3 h-3 text-gray-600 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Header */}
+        <div className={`border-b border-gray-200 ${isExpanded ? 'p-6' : 'p-3'}`}>
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-semibold text-lg">
+                {user?.nombre?.charAt(0)?.toUpperCase() || 'J'}
+              </span>
+            </div>
+            {isExpanded && (
+              <div className="min-w-0">
+                <h2 className="text-lg font-semibold text-gray-900 truncate">{title || 'Dashboard Jugador'}</h2>
+                <p className="text-sm text-gray-500 truncate">{user?.nombre}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className={`flex-1 ${isExpanded ? 'p-4' : 'p-2'}`}>
+          <ul className="space-y-1">
+            {menuItems.map((item, index) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <li key={index}>
+                  <button
+                    onClick={() => navigate(item.path)}
+                    className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 group ${
+                      isActive
+                        ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 ml-0'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                    title={!isExpanded ? item.label : ''}
+                  >
+                    <div className="flex-shrink-0">
+                      {getIcon(item.icon)}
+                    </div>
+                    {isExpanded && (
+                      <>
+                        <span className="font-medium truncate">{item.label}</span>
+                        {item.badge && (
+                          <span className="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full flex-shrink-0">
+                            {item.badge}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* Footer */}
+        <div className={`border-t border-gray-200 ${isExpanded ? 'p-4' : 'p-2'}`}>
+          {isExpanded ? (
+            <div className="text-center text-xs text-gray-400">
+              <p>PlayZone Dashboard</p>
+              <p className="mt-1">v1.0.0</p>
+            </div>
+          ) : (
+            <div className="text-center text-xs text-gray-400">
+              <p>PZ</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Para el panel de administración, usar el sistema original
   return (
     <div className={`min-h-screen bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out relative ${
       isExpanded ? 'w-64' : 'w-16'
@@ -118,7 +224,7 @@ const Sidebar = ({ menuItems, activeSection, onSectionChange, isExpanded, onTogg
           </div>
           {isExpanded && (
             <div className="min-w-0">
-              <h2 className="text-lg font-semibold text-gray-900 truncate">Dashboard</h2>
+              <h2 className="text-lg font-semibold text-gray-900 truncate">Panel de Administración</h2>
               <p className="text-sm text-gray-500 truncate">{user?.nombre}</p>
             </div>
           )}

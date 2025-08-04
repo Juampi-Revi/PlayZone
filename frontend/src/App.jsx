@@ -1,22 +1,22 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import Header from './components/Header';
-import Home from './pages/Home';
-import BuscarCanchas from './pages/BuscarCanchas';
-import DetalleCancha from './pages/DetalleCancha';
-import Login from './pages/Login';
-import Registrar from './pages/Registrar';
-import MisReservas from './pages/MisReservas';
-import PagarReserva from './pages/PagarReserva';
+import PrivateRoute from './components/PrivateRoute';
+import { AuthProvider } from './context/AuthContext';
 import AdminPanel from './pages/AdminPanel';
 import AgregarCancha from './pages/AgregarCancha';
-import ListadoCanchas from './pages/ListadoCanchas';
-import MisCanchas from './pages/MisCanchas';
-import Dashboard from './pages/Dashboard';
+import BuscarCanchas from './pages/BuscarCanchas';
 import DashboardAdmin from './pages/DashboardAdmin';
-import GestionClub from './pages/admin/GestionClub';
-import PrivateRoute from './components/PrivateRoute';
+import DashboardJugador from './pages/DashboardJugador';
+import DetalleCancha from './pages/DetalleCancha';
+import Home from './pages/Home';
+import ListadoCanchas from './pages/ListadoCanchas';
+import Login from './pages/Login';
+import MisCanchas from './pages/MisCanchas';
+import MisReservas from './pages/MisReservas';
 import NotFound from './pages/NotFound';
+import PagarReserva from './pages/PagarReserva';
+import Registrar from './pages/Registrar';
+import GestionClub from './pages/admin/GestionClub';
 
 function App() {
   return (
@@ -86,10 +86,50 @@ function App() {
             
             {/* Unified Dashboard for both roles */}
             <Route 
-              path="/dashboard-jugador" 
+              path="/dashboard/jugador" 
               element={
                 <PrivateRoute allowedRoles={['JUGADOR']}>
-                  <Dashboard />
+                  <DashboardJugador />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/jugador/perfil" 
+              element={
+                <PrivateRoute allowedRoles={['JUGADOR']}>
+                  <DashboardJugador />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/jugador/favoritos" 
+              element={
+                <PrivateRoute allowedRoles={['JUGADOR']}>
+                  <DashboardJugador />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/jugador/pagos" 
+              element={
+                <PrivateRoute allowedRoles={['JUGADOR']}>
+                  <DashboardJugador />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/jugador/partidos" 
+              element={
+                <PrivateRoute allowedRoles={['JUGADOR']}>
+                  <DashboardJugador />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/jugador/reservas" 
+              element={
+                <PrivateRoute allowedRoles={['JUGADOR']}>
+                  <DashboardJugador />
                 </PrivateRoute>
               } 
             />

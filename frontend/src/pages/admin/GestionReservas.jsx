@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useReservasAdmin } from '../../hooks/useReservasAdmin';
 
 const GestionReservas = () => {
   const { user } = useAuth();
+  const { getReservasAdmin, confirmarReserva, completarReserva, cancelReserva, loading: apiLoading, error } = useReservasAdmin();
   const [reservas, setReservas] = useState([]);
   const [filtros, setFiltros] = useState({
     estado: 'todas',
@@ -22,12 +24,11 @@ const GestionReservas = () => {
     { value: 'completada', label: 'Completadas', color: 'blue' }
   ];
 
+  // Lista de canchas para el filtro (dinámicamente generada desde las reservas)
   const canchas = [
     { id: 'todas', nombre: 'Todas las canchas' },
-    { id: 1, nombre: 'Cancha de Fútbol 1' },
-    { id: 2, nombre: 'Cancha de Fútbol 2' },
-    { id: 3, nombre: 'Cancha de Tenis 1' },
-    { id: 4, nombre: 'Cancha de Básquet' }
+    ...Array.from(new Set(reservas.map(r => r.cancha)))
+      .map(cancha => ({ id: cancha, nombre: cancha }))
   ];
 
   useEffect(() => {
@@ -37,63 +38,16 @@ const GestionReservas = () => {
   const cargarReservas = async () => {
     setLoading(true);
     try {
-      // Aquí harías la llamada a la API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const reservasEjemplo = [
-        {
-          id: 1,
-          jugador: 'Juan Pérez',
-          email: 'juan@email.com',
-          telefono: '+54 11 1234-5678',
-          cancha: 'Cancha de Fútbol 1',
-          fecha: '2024-01-15',
-          horaInicio: '14:00',
-          horaFin: '15:30',
-          duracion: 90,
-          precio: 3500,
-          estado: 'confirmada',
-          fechaReserva: '2024-01-10',
-          metodoPago: 'Tarjeta de crédito',
-          observaciones: 'Cumpleaños, necesito decoración'
-        },
-        {
-          id: 2,
-          jugador: 'María García',
-          email: 'maria@email.com',
-          telefono: '+54 11 9876-5432',
-          cancha: 'Cancha de Tenis 1',
-          fecha: '2024-01-15',
-          horaInicio: '16:00',
-          horaFin: '17:00',
-          duracion: 60,
-          precio: 2500,
-          estado: 'pendiente',
-          fechaReserva: '2024-01-12',
-          metodoPago: 'Transferencia',
-          observaciones: ''
-        },
-        {
-          id: 3,
-          jugador: 'Carlos López',
-          email: 'carlos@email.com',
-          telefono: '+54 11 5555-1234',
-          cancha: 'Cancha de Básquet',
-          fecha: '2024-01-14',
-          horaInicio: '18:00',
-          horaFin: '19:30',
-          duracion: 90,
-          precio: 4000,
-          estado: 'cancelada',
-          fechaReserva: '2024-01-08',
-          metodoPago: 'Efectivo',
-          observaciones: 'Cancelado por lluvia'
-        }
-      ];
-      
-      setReservas(reservasEjemplo);
+      const result = await getReservasAdmin();
+      if (result.success) {
+        setReservas(result.data);
+      } else {
+        console.error('Error cargando reservas:', result.error);
+        setReservas([]);
+      }
     } catch (error) {
-      console.error('Error al cargar reservas:', error);
+      console.error('Error cargando reservas:', error);
+      setReservas([]);
     } finally {
       setLoading(false);
     }
@@ -102,8 +56,20 @@ const GestionReservas = () => {
   const filtrarReservas = () => {
     return reservas.filter(reserva => {
       const cumpleFiltroEstado = filtros.estado === 'todas' || reserva.estado === filtros.estado;
-      const cumpleFiltroCancha = filtros.cancha === 'todas' || reserva.cancha.includes(filtros.cancha);
-      const cumpleFiltroFecha = !filtros.fecha || reserva.fecha === filtros.fecha;
+      const cumpleFiltroCancha = filtros.cancha === 'todas' || reserva.cancha === filtros.cancha;
+      
+      // Convertir fecha del filtro al formato del backend (dd/MM/yyyy)
+      let cumpleFiltroFecha = true;
+      if (filtros.fecha) {
+        const fechaFiltro = new Date(filtros.fecha);
+        const fechaFormateada = fechaFiltro.toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+        cumpleFiltroFecha = reserva.fecha === fechaFormateada;
+      }
+      
       const cumpleFiltroBusqueda = !filtros.busqueda || 
         reserva.jugador.toLowerCase().includes(filtros.busqueda.toLowerCase()) ||
         reserva.email.toLowerCase().includes(filtros.busqueda.toLowerCase());
@@ -114,18 +80,38 @@ const GestionReservas = () => {
 
   const cambiarEstadoReserva = async (reservaId, nuevoEstado) => {
     try {
-      // Aquí harías la llamada a la API
-      await new Promise(resolve => setTimeout(resolve, 500));
+      let result;
       
-      setReservas(prev => prev.map(reserva => 
-        reserva.id === reservaId 
-          ? { ...reserva, estado: nuevoEstado }
-          : reserva
-      ));
+      switch (nuevoEstado) {
+        case 'confirmada':
+          result = await confirmarReserva(reservaId);
+          break;
+        case 'completada':
+          result = await completarReserva(reservaId);
+          break;
+        case 'cancelada':
+          result = await cancelReserva(reservaId);
+          break;
+        default:
+          console.error('Estado no válido:', nuevoEstado);
+          return;
+      }
       
-      setShowModal(false);
+      if (result.success) {
+        // Actualizar el estado local
+        setReservas(prev => prev.map(reserva => 
+          reserva.id === reservaId 
+            ? { ...reserva, estado: nuevoEstado }
+            : reserva
+        ));
+        setShowModal(false);
+      } else {
+        console.error('Error al cambiar estado:', result.error);
+        alert('Error al cambiar el estado de la reserva: ' + result.error);
+      }
     } catch (error) {
       console.error('Error al cambiar estado:', error);
+      alert('Error al cambiar el estado de la reserva');
     }
   };
 
@@ -262,9 +248,25 @@ const GestionReservas = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
             <p className="mt-4 text-gray-600">Cargando reservas...</p>
           </div>
+        ) : error ? (
+          <div className="p-8 text-center">
+            <div className="text-red-500 mb-4">
+              <span className="text-4xl">⚠️</span>
+            </div>
+            <p className="text-red-600 font-medium">Error al cargar las reservas</p>
+            <p className="text-gray-500 text-sm mt-2">{error}</p>
+            <button 
+              onClick={cargarReservas}
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Reintentar
+            </button>
+          </div>
         ) : reservasFiltradas.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500">No se encontraron reservas con los filtros aplicados</p>
+            <p className="text-gray-500">
+              {reservas.length === 0 ? 'No tienes reservas aún' : 'No se encontraron reservas con los filtros aplicados'}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">

@@ -78,7 +78,7 @@ const Header = () => {
             ) : (
               <div className="flex items-center space-x-4">
                 <Link 
-                  to={user.tipo === 'CLUB' ? '/dashboard-admin' : '/dashboard-jugador'}
+                  to={user.tipo === 'CLUB' ? '/dashboard-admin' : '/dashboard/jugador'}
                   className="group flex items-center space-x-3 bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white border-opacity-30 hover:bg-white hover:bg-opacity-30 transition-all duration-300 hover:scale-105 transform"
                 >
                   <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-lg flex items-center justify-center">
@@ -171,7 +171,7 @@ const Header = () => {
               ) : (
                 <div className="space-y-3">
                   <Link 
-                    to={user.tipo === 'CLUB' ? '/dashboard-admin' : '/dashboard-jugador'}
+                    to={user.tipo === 'CLUB' ? '/dashboard-admin' : '/dashboard/jugador'}
                     className="group flex items-center space-x-3 bg-white bg-opacity-20 backdrop-blur-sm px-4 py-3 rounded-xl border border-white border-opacity-30 hover:bg-white hover:bg-opacity-30 transition-all duration-300 hover:scale-105 transform"
                     onClick={() => setIsMenuOpen(false)}
                   >

@@ -9,7 +9,7 @@ export const useCanchasAPI = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('/api/configuracion-horarios/mis-canchas');
+      const response = await axios.get(`/api/configuracion-horarios/mis-canchas`);
       setLoading(false);
       return { success: true, data: response.data };
     } catch (err) {
@@ -23,7 +23,7 @@ export const useCanchasAPI = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('/api/canchas');
+      const response = await axios.get(`/api/canchas`);
       setLoading(false);
       return { success: true, data: response.data };
     } catch (err) {
@@ -37,7 +37,7 @@ export const useCanchasAPI = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('/api/canchas', canchaData);
+      const response = await axios.post(`/api/canchas`, canchaData);
       setLoading(false);
       return { success: true, data: response.data };
     } catch (err) {
@@ -51,7 +51,7 @@ export const useCanchasAPI = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('/api/canchas/admin', canchaData);
+      const response = await axios.post(`/api/canchas/admin`, canchaData);
       setLoading(false);
       return { success: true, data: response.data };
     } catch (err) {
@@ -121,7 +121,7 @@ export const useCanchasAPI = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('/api/canchas/deportes');
+      const response = await axios.get(`/api/canchas/deportes`);
       setLoading(false);
       return { success: true, data: response.data };
     } catch (err) {

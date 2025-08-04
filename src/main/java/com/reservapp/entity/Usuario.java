@@ -36,6 +36,9 @@ public class Usuario {
     @Size(max = 20)
     private String tipo; // "CLUB" o "JUGADOR"
 
+    @Size(max = 20)
+    private String telefono;
+
     private LocalDateTime fechaRegistro = LocalDateTime.now();
 
     private Boolean activo = true;
@@ -51,6 +54,8 @@ public class Usuario {
     public void setPassword(String password) { this.password = password; }
     public String getTipo() { return tipo; }
     public void setTipo(String tipo) { this.tipo = tipo; }
+    public String getTelefono() { return telefono; }
+    public void setTelefono(String telefono) { this.telefono = telefono; }
     public LocalDateTime getFechaRegistro() { return fechaRegistro; }
     public void setFechaRegistro(LocalDateTime fechaRegistro) { this.fechaRegistro = fechaRegistro; }
     public Boolean getActivo() { return activo; }

@@ -1,5 +1,6 @@
-import { useState } from 'react';
 import axios from 'axios';
+import { useState } from 'react';
+
 
 export const useProductosAPI = () => {
   const [loading, setLoading] = useState(false);
@@ -9,7 +10,7 @@ export const useProductosAPI = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('/api/productos');
+      const response = await axios.get(`/api/productos`);
       setLoading(false);
       return { success: true, data: response.data };
     } catch (err) {
@@ -23,7 +24,7 @@ export const useProductosAPI = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('/api/productos', productoData);
+      const response = await axios.post(`/api/productos`, productoData);
       setLoading(false);
       return { success: true, data: response.data };
     } catch (err) {

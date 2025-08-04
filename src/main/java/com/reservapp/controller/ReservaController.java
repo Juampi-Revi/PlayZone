@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/reservas")
-@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://127.0.0.1:5174", "http://localhost:5175", "http://127.0.0.1:5175", "http://localhost:3000", "http://127.0.0.1:3000"})
 public class ReservaController {
 
     @Autowired
@@ -70,6 +70,39 @@ public class ReservaController {
             
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Obtiene las reservas del usuario autenticado (endpoint específico)
+     */
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/mis-reservas")
+    public ResponseEntity<Map<String, Object>> getMisReservas() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+            
+            Long usuarioId = usuarioService.getUsuarioIdByEmail(email);
+            
+            List<Reserva> reservas = reservaService.getReservasByUsuario(usuarioId);
+            
+            List<Map<String, Object>> reservasResponse = reservas.stream()
+                    .map(this::convertirReservaAMap)
+                    .collect(Collectors.toList());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("reservas", reservasResponse);
+            response.put("total", reservasResponse.size());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Error al obtener reservas: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
@@ -160,6 +193,94 @@ public class ReservaController {
     }
 
     /**
+     * Confirma una reserva (solo para administradores)
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/confirmar")
+    public ResponseEntity<Map<String, Object>> confirmarReserva(@PathVariable Long id) {
+        try {
+            reservaService.confirmarReserva(id);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Reserva confirmada exitosamente");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    /**
+     * Completa una reserva (solo para administradores)
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/completar")
+    public ResponseEntity<Map<String, Object>> completarReserva(@PathVariable Long id) {
+        try {
+            reservaService.completarReserva(id);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Reserva completada exitosamente");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    /**
+     * Obtiene todas las reservas del club del administrador autenticado
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/todas")
+    public ResponseEntity<Map<String, Object>> getAllReservasAdmin() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+            
+            Long usuarioId = usuarioService.getUsuarioIdByEmail(email);
+            
+            // Obtener el club del administrador
+            Long clubId = usuarioService.getClubIdByUsuarioId(usuarioId);
+            if (clubId == null) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("success", false);
+                error.put("message", "No tienes un club asociado");
+                return ResponseEntity.badRequest().body(error);
+            }
+            
+            List<Reserva> reservas = reservaService.getReservasByClub(clubId);
+            
+            List<Map<String, Object>> reservasData = reservas.stream()
+                    .map(this::convertirReservaAMapAdmin)
+                    .collect(Collectors.toList());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", reservasData);
+            response.put("total", reservasData.size());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+
+    /**
      * Verifica disponibilidad de una cancha
      */
     @GetMapping("/disponibilidad")
@@ -213,6 +334,56 @@ public class ReservaController {
         map.put("canchaDeporte", reserva.getCancha().getDeporte());
         map.put("canchaUbicacion", reserva.getCancha().getUbicacion());
         map.put("canchaPrecioPorHora", reserva.getCancha().getPrecioPorHora());
+        
+        return map;
+    }
+
+    /**
+     * Convierte una entidad Reserva a Map para administradores con información adicional
+     */
+    private Map<String, Object> convertirReservaAMapAdmin(Reserva reserva) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", reserva.getId());
+        
+        // Información del jugador
+        map.put("jugador", reserva.getUsuario().getNombre());
+        map.put("email", reserva.getUsuario().getEmail());
+        map.put("telefono", reserva.getUsuario().getTelefono() != null ? reserva.getUsuario().getTelefono() : "");
+        
+        // Información de la cancha
+        map.put("cancha", reserva.getCancha().getNombre());
+        map.put("canchaId", reserva.getCancha().getId());
+        
+        // Información de fecha y hora
+        LocalDateTime inicio = reserva.getFechaHoraInicio();
+        LocalDateTime fin = reserva.getFechaHoraFin();
+        map.put("fecha", inicio.toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        map.put("horaInicio", inicio.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+        map.put("horaFin", fin.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+        
+        // Calcular duración en minutos
+        long duracionMinutos = ChronoUnit.MINUTES.between(inicio, fin);
+        map.put("duracion", duracionMinutos);
+        
+        // Información financiera
+        map.put("precio", reserva.getMontoTotal());
+        
+        // Estado
+        String estado = reserva.getEstado().toString().toLowerCase();
+        map.put("estado", estado);
+        
+        // Fecha de reserva (cuándo se hizo la reserva)
+        map.put("fechaReserva", reserva.getFechaCreacion().toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        
+        // Método de pago (basado en si tiene stripe info)
+        String metodoPago = "Efectivo";
+        if (reserva.getStripePaymentIntentId() != null || reserva.getStripeSessionId() != null) {
+            metodoPago = "Tarjeta de crédito";
+        }
+        map.put("metodoPago", metodoPago);
+        
+        // Observaciones (por ahora vacío, se puede agregar campo en el futuro)
+        map.put("observaciones", "");
         
         return map;
     }

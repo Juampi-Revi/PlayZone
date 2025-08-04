@@ -31,7 +31,7 @@ const Login = () => {
         if (res.user.tipo === 'CLUB') {
           navigate('/dashboard-admin');
         } else if (res.user.tipo === 'JUGADOR') {
-          navigate('/dashboard-jugador');
+          navigate('/dashboard/jugador');
         } else {
           navigate('/');
         }
